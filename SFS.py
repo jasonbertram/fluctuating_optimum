@@ -98,17 +98,16 @@ L=1000
 rep=100
 sim_L=rep*L
 
-sigma_e2s=np.array([0,1e-4,1e-2])
+sigma_e2s=np.array([0,1e-4,1e-3,1e-2])
 #sigma_e2s=np.array([1e-2])
 
-#Ns=np.array([100,1000,10000])
-Ns=np.array([1000])
-Vs=np.array([20])
-#mus=np.array([1e-6,1e-5,1e-4])
-mus=np.array([1e-5])
+Ns=np.array([1000,10000])
+Vs=np.array([5,20])
+mus=np.array([1e-6,1e-5])
+
 
 #Mutational heritability = 2 L mu alpha**2 (2 comes from diploidy)  
-Vm=1e-2
+Vm=5e-3
 
 #If dt<1, iterate in fraction of a generation
 dt=1
@@ -177,14 +176,18 @@ for N in Ns:
             
             Vg_mean=np.array([np.mean(Vg_sims[str([_,N,V_s,mu])]) for _ in sigma_e2s])
             
+            print((2.*V_s)**-1*Vm/(2*L*mu))
+            
             #Environmental variance set to 1
             h_2=Vg_mean/(Vg_mean+1)
             
             plt.plot(sigma_e2s,h_2,label=str(N)+','+str(V_s)+','+str(mu))
+            Vg_theory=0.5*4*L*mu*V_s*(1+np.sqrt(1+sigma_e2s/(4*V_s*L**2*mu**2)))
+            plt.plot(sigma_e2s, Vg_theory/(Vg_theory+1))
             plt.ylim([0,1])
             plt.legend()
             
-
+            """
             #SFS from diffusion approximation
             alpha=np.sqrt(Vm/(2*L*mu))
             sigma_c2s=alpha**2*sigma_e2s[1:]/Vg_mean[1:]**2
@@ -201,7 +204,7 @@ for N in Ns:
             plt.plot(sigma_e2s[1:],Vg_theory/(Vg_theory+1),'k')
             #plt.semilogx(sigma_e2s,Vg_theory_consistent)
             plt.plot(sigma_e2s,Vg_theory_consistent/(Vg_theory_consistent+1))
-            
+            """
             
             
 
