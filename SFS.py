@@ -37,56 +37,34 @@ from scipy.special import hyp2f1,erf
 from scipy import integrate
 from scipy.optimize import minimize
 
-def int_fac(x,a,b):
-    a_fac=np.sqrt(a/(a+4))
-    
-    # return (1/a_fac)*(2**(b-1)/(b+1)) \
-    #     *(1-a_fac*(1-2*x)) \
-    #         *(1+a_fac*(1-2*x))**(-b) \
-    #             *(1+a*x*(1-x))**b \
-    #                 *hyp2f1(-b,b+1,b+2,(1-a_fac*(1-2*x))/2)
-    return x#**(0*b+1)*(1+0*(-b)/(1+1/(b+1))*x+0*(-b)*(-b+1)/(1+1/(b+1)+1/(b+2))*x**2/2)
-    
+   
                     
 
-def phi_not_normed(x,N,sigma_c2,s):
+def phi_not_normed(x,N,mu,sigma_c2,s):
     
-    C=int_fac(1,N*sigma_c2,2*s/sigma_c2-1)
     
     a=N*sigma_c2
     
-    x_m=0.5-0.5*np.sqrt(1+4/a)
-    x_p=0.5+0.5*np.sqrt(1+4/a)
-    
     #return (1+N*sigma_c2*x*(1-x))**(-2*s/sigma_c2)/(x*(1-x))*(C-int_fac(x,N*sigma_c2,2*s/sigma_c2-1))
     #return (1+N*sigma_c2*x*(1-x))**(-2*s/sigma_c2)/(x*(1-x))*(C-int_fac(x,N*sigma_c2,2*s/sigma_c2-1))
-    return (1/x)*(1/(x-x_m)-0*1/(x-x_p))**(2*s/sigma_c2)
+    return (1+N*sigma_c2*x*(1-x))**(-2*s/sigma_c2-2*N*mu)/(x*(1-x))**(1-2*N*mu)
     
 
-def phi_norm_const(N,sigma_c2,s,mu):
-    return 1/(integrate.quad(lambda x: phi_not_normed(x,N,sigma_c2,s),1/N,1-1/N)[0]+0.*2/((1-np.exp(-1))*mu*N**2)*(np.exp(-1)*phi_not_normed(1/N,N,sigma_c2,s)+1*np.exp(-2)*phi_not_normed(2/N,N,sigma_c2,s)))
+def phi_norm_const(N,mu,sigma_c2,s):
+    return 0.5/(integrate.quad(lambda x: phi_not_normed(x,N,mu,sigma_c2,s),0/N,1/N)[0]+integrate.quad(lambda x: phi_not_normed(x,N,mu,sigma_c2,s),1/N,0.5)[0])
 
-def E_H(N,sigma_c2,s,mu):
-    return integrate.quad(lambda x: x*(1-x)*phi_not_normed(x,N,sigma_c2,s),1/N,1)[0]*phi_norm_const(N,sigma_c2,s,mu)
-
-
-# def int_fac_nofluc(x,N,s):
-#     a=2*N*s
-#     return erf(0.5*np.sqrt(a)*(2*x-1))
-
-# def phi_nofluc(x,N,s):
-#     C=int_fac_nofluc(1,N,s)
-#     norm_const=1/integrate.quad(lambda x: np.exp(-2*N*s*x*(1-x))/(x*(1-x))*(C-int_fac_nofluc(x,N,s)),1/N,1)[0]
-#     return norm_const*np.exp(-2*N*s*x*(1-x))/(x*(1-x))*(C-int_fac_nofluc(x,N,s))
+def E_H(N,mu,sigma_c2,s):
+    return 2*(integrate.quad(lambda x: x*(1-x)*phi_not_normed(x,N,mu,sigma_c2,s),0/N,1/N)[0]+integrate.quad(lambda x: x*(1-x)*phi_not_normed(x,N,mu,sigma_c2,s),1/N,0.5)[0])*phi_norm_const(N,mu,sigma_c2,s)
 
 
-def Vg_pred(Vg,N,alpha,L,sigma_e2,V_s):
+
+def Vg_pred(Vg,N,mu,alpha,L,sigma_e2,V_s):
     s=alpha**2/(2*V_s)
     sigma_c2=alpha**2*sigma_e2/Vg**2
-    return alpha**2*L*E_H(N,sigma_c2,s,mu)
+    return alpha**2*L*E_H(N,mu,sigma_c2,s)
 
-def Vg_pred_consistent(init,N,alpha,L,sigma_e2,V_s,trunc):
-    res = minimize(lambda x: (Vg_pred(x,N,alpha,L,sigma_e2,V_s)-x)**2, init)
+def Vg_pred_consistent(init,N,mu,alpha,L,sigma_e2,V_s):
+    res = minimize(lambda x: (Vg_pred(x,N,mu,alpha,L,sigma_e2,V_s)-x)**2, init)
     return res.x[0]
 
 #%%%
@@ -98,8 +76,8 @@ L=1000
 rep=100
 sim_L=rep*L
 
-sigma_e2s=np.array([0,1e-4,1e-3,1e-2])
-#sigma_e2s=np.array([1e-2])
+#sigma_e2s=np.array([0,1e-4,1e-2])
+sigma_e2s=np.array([0])
 
 Ns=np.array([1000,10000])
 Vs=np.array([5,20])
@@ -176,16 +154,23 @@ for N in Ns:
             
             Vg_mean=np.array([np.mean(Vg_sims[str([_,N,V_s,mu])]) for _ in sigma_e2s])
             
-            print((2.*V_s)**-1*Vm/(2*L*mu))
+            print(N,V_s,mu,Vg_mean,2*L*mu*V_s)
+            
+            #print((2.*V_s)**-1*Vm/(2*L*mu))
             
             #Environmental variance set to 1
-            h_2=Vg_mean/(Vg_mean+1)
+            # h_2=Vg_mean/(Vg_mean+1)
+            # plt.plot(sigma_e2s,h_2,label=str(N)+','+str(V_s)+','+str(mu))
             
-            plt.plot(sigma_e2s,h_2,label=str(N)+','+str(V_s)+','+str(mu))
-            Vg_theory=0.5*4*L*mu*V_s*(1+np.sqrt(1+sigma_e2s/(4*V_s*L**2*mu**2)))
-            plt.plot(sigma_e2s, Vg_theory/(Vg_theory+1))
-            plt.ylim([0,1])
-            plt.legend()
+            # Vg_theory=0.5*2*L*mu*V_s*(1+np.sqrt(1+sigma_e2s/(V_s*L**2*mu**2)))
+            # plt.plot(sigma_e2s, Vg_theory/(Vg_theory+1))
+            
+            # alpha=np.sqrt(Vm/(2*L*mu))
+            # Vg_numerical=np.array([Vg_pred_consistent(1e-1,N,mu,alpha,L,sigma_e2,V_s) for sigma_e2 in sigma_e2s])
+            # plt.plot(sigma_e2s, Vg_numerical/(Vg_numerical+1))
+            
+            # plt.ylim([0,.5])
+            # plt.legend()
             
             """
             #SFS from diffusion approximation
