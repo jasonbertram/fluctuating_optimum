@@ -3,7 +3,7 @@
 Created on Mon Jan 10 10:07:53 2022
 
 @author: jason
-""""
+"""
 
 
 #
@@ -22,74 +22,24 @@ def pmap(rho):
 def rhomap(p):
     return p/(1-p)
 
-#simplified selection mapping assuming zbar=opt
-def p_prime_sel_opt(p,delt_opt,gam,sign,V_s):
+def p_prime_sel_opt(p,delt_opt,a,sign,V_s):
     
-    S=1/(2*V_s)
-        
-    
-    p=pmap(rhomap(p)*np.exp(2*S*gam*sign*(delt_opt+0.5*gam*sign*(2*p-1))))    
+    S=1/V_s
+    p=pmap(rhomap(p)*np.exp(S*gam*sign*(delt_opt+0.5*a*sign*(2*p-1))))    
     return p
 
-  
 
-#Theory functions
-#======================
-from scipy.special import hyp2f1,erf
-from scipy import integrate
-from scipy.optimize import minimize
-
-   
-                    
-
-def phi_not_normed(x,N,mu,sigma_c2,s):
-    
-    if sigma_c2==0:
-        return np.exp(-2*N*s*x*(1-x))*(x*(1-x))**(2*N*mu-1)
-    else:
-        return (1+0.5*N*sigma_c2*x*(1-x))**(-2*s/sigma_c2-2*N*mu)/(x*(1-x))**(1-2*N*mu)
-    
-
-def phi_norm_const(N,mu,sigma_c2,s):
-    return 0.5/(integrate.quad(lambda x: phi_not_normed(x,N,mu,sigma_c2,s),0/N,1/N)[0]+integrate.quad(lambda x: phi_not_normed(x,N,mu,sigma_c2,s),1/N,0.5)[0])
-
-def E_H(N,mu,sigma_c2,s):
-    return 2*(integrate.quad(lambda x: x*(1-x)*phi_not_normed(x,N,mu,sigma_c2,s),0/N,1/N)[0]+integrate.quad(lambda x: x*(1-x)*phi_not_normed(x,N,mu,sigma_c2,s),1/N,0.5)[0])*phi_norm_const(N,mu,sigma_c2,s)
-
-
-def Vg_pred(Vg,N,mu,a,L,sigma_e2,V_s):
-    s=a**2/(2*V_s)
-    sigma_c2=a**2*sigma_e2/Vg**2
-    return 2*a**2*L*E_H(N,mu,sigma_c2,s)
-
-def Vg_pred_consistent(init,N,mu,a,L,sigma_e2,V_s):
-    res = minimize(lambda x: (Vg_pred(x,N,mu,a,L,sigma_e2,V_s)-x)**2, init)
-    return res.x[0]
-
-
-def Vg_theory_opt(x,N,a,so2,L,mu,Vs):
-    
-    if so2==0:
-        return x-4*L*mu*V_s
-    
-    else: 
-        sc2=a**2*so2/x**2
-        d=np.abs(0.5*(1-np.sqrt(1+4/(1*N*sc2))))
-        b=x**2/(Vs*so2)-2*N*mu
-        b_t=b/(d+1)
-    
-        return (2*N*mu)*(2*L*a**2)*d**b_t*(d**(1-b_t)-(0.5+d)**(1-b_t))/(b_t-1)-x
 
 
 
 #%%%
+#Single processor simulation
 
 Vg_sims={}
 
 
 L=1000
-rep=10
-sim_L=rep*L
+rep=5
 
 sigma_e2s=np.array([0,1e-3,1e-2])
 #sigma_e2s=np.array([0])
@@ -99,7 +49,7 @@ Vs=np.array([5])
 #mus=np.array([5e-7,5e-6,5e-5])
 mus=np.array([5e-6])
 
-#phist={str(_):np.zeros([maxiter,L,rep]) for _ in sigma_e2s}
+phist={str(_):np.zeros([maxiter,L,rep]) for _ in sigma_e2s}
 
 #Mutational heritability = 2 L mu alpha**2 (2 comes from diploidy)  
 Vm=5e-4
@@ -120,14 +70,14 @@ for sigma_e2,NN,V_s,mu in itertools.product(sigma_e2s,Ns,Vs,mus):
     p=np.zeros([L,rep])
     
     
-    # opt_hist=np.zeros([maxiter,rep])
-    # zbar_hist=np.zeros([maxiter,rep])
-    # numfix_hist=np.zeros([maxiter,rep])
+    opt_hist=np.zeros([maxiter,rep])
+    zbar_hist=np.zeros([maxiter,rep])
+    numfix_hist=np.zeros([maxiter,rep])
     
     
     for t in tqdm(range(maxiter)):
         
-        #phist[str(sigma_e2)][t]=np.array(p)
+        phist[str(sigma_e2)][t]=np.array(p)
         
         fixed_loci_1=(p==1)
         
@@ -141,9 +91,9 @@ for sigma_e2,NN,V_s,mu in itertools.product(sigma_e2s,Ns,Vs,mus):
         fixed_loci_0=(p==0)
         mutation_mask=((np.random.rand(L,rep)<N*mu) & fixed_loci_0)
         
-        # zbar_hist[t]=zbar
-        # opt_hist[t]=opt
-        # numfix_hist[t]=np.sum(fixed_loci_1,0)
+        zbar_hist[t]=zbar
+        opt_hist[t]=opt
+        numfix_hist[t]=np.sum(fixed_loci_1,0)
         
         
         np.place(p,mutation_mask,1/N)
@@ -158,68 +108,11 @@ for sigma_e2,NN,V_s,mu in itertools.product(sigma_e2s,Ns,Vs,mus):
         
         
         p=np.random.binomial(N,p_prime_sel_opt(p,opt-zbar,a,sign,V_s))/N
-        #p=np.random.binomial(N,p,size=sim_L)/N
         
         opt=np.random.normal(opt,np.sqrt(sigma_e2),rep)
     
     Vg_sims[str([sigma_e2,NN,V_s,mu])]=2*a**2*np.sum(p*(1-p),0)
 
-print(N)
-
-#Vg_sims=np.array(Vg_sims)
-
-
-#%%%
-#Genetic variance versus sigma_e2
-
-params=np.array(list(itertools.product(sigma_e2s,Ns,Vs,mus)))
-
-for N in Ns:
-    for V_s in Vs:
-        for mu in mus:
-            plt.figure()
-            
-            #Vg_mean=np.array([np.mean(Vg_sims[str([_,N,V_s,mu])]) for _ in sigma_e2s])
-            
-            plt.violinplot([Vg_sims[str([_,N,V_s,mu])]/(Vg_sims[str([_,N,V_s,mu])]+1) for _ in sigma_e2s],positions=sigma_e2s,widths=1e-3,showmedians=True)
-            
-            print((2.*V_s)**-1*Vm/(2*L*mu))
-            
-            #Environmental variance set to 1
-            #h_2=Vg_mean/(Vg_mean+1)
-            #plt.plot(sigma_e2s,h_2,label=str(N)+','+str(V_s)+','+str(mu))
-            
-            gam=np.sqrt(Vm/(2*L*mu))
-            #Vg_theory=0.5*2*L*mu*V_s*(1+np.sqrt(1+sigma_e2s/(V_s*L**2*mu**2)))
-            Vg_theory=np.array([scipy.optimize.fsolve(lambda x: Vg_theory_opt(x,N,gam,_,L,mu,V_s),0.025)[0] for _ in sigma_e2s])
-            plt.plot(sigma_e2s, Vg_theory/(Vg_theory+1))
-            
-            
-            Vg_numerical=np.array([Vg_pred_consistent(2e-1,N,mu,gam,L,sigma_e2,V_s) for sigma_e2 in sigma_e2s])
-            plt.plot(sigma_e2s, Vg_numerical/(Vg_numerical+1),'k',label='numerical')
-            
-            plt.ylim([0,.5])
-            plt.xlim([-1e-3,1.2e-2])
-            plt.legend()
-            
-            """
-            #SFS from diffusion approximation
-            alpha=np.sqrt(Vm/(2*L*mu))
-            sigma_c2s=alpha**2*sigma_e2s[1:]/Vg_mean[1:]**2
-            print(sigma_c2s)
-            s=alpha**2/(2*V_s)
-            
-            H_theory=np.array([E_H(N,sigma_c2,s,mu) for sigma_c2 in sigma_c2s])
-            Vg_theory=2*alpha**2*L*H_theory
-
-            Vg_theory_consistent=np.array([Vg_pred_consistent(Vg_mean[_],N,alpha,L,sigma_e2s[_],V_s,1/N) for _ in range(len(sigma_e2s))])
-            
-            #plt.semilogx(sigma_e2s,alpha**2*L*H_theory)
-            
-            plt.plot(sigma_e2s[1:],Vg_theory/(Vg_theory+1),'k')
-            #plt.semilogx(sigma_e2s,Vg_theory_consistent)
-            plt.plot(sigma_e2s,Vg_theory_consistent/(Vg_theory_consistent+1))
-            """
             
             
 
