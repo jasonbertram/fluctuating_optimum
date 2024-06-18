@@ -65,7 +65,7 @@ def simulate(param):
         # opt_hist[t]=opt
         # numfix_hist[t]=np.sum(fixed_loci_1,0)
         
-        
+             
         np.place(p,mutation_mask,1/N)
         np.place(sign,mutation_mask,2*np.random.randint(0,2,np.sum(mutation_mask))-1)
         
@@ -112,7 +112,7 @@ params=[_ for _ in itertools.product(Ls,sigma_e2s,Ns,Vs,mus,Vms,reps)]
 
 
 if __name__ == '__main__':
-    p=Pool(6)
+    p=Pool(32)
     output=np.array(p.map(simulate, params))
     
 
