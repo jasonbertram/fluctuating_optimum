@@ -36,7 +36,7 @@ def simulate(param):
     
     L,sigma_e2,N,V_s,mu,Vm,rep=param
     
-    a=np.sqrt(Vm/(2*L*mu))
+        a=np.sqrt(Vm/(2*L*mu))
     
     sign=2*np.random.randint(0,2,[L,rep])-1
     
@@ -83,7 +83,7 @@ def simulate(param):
         opt=np.random.normal(opt,np.sqrt(sigma_e2),rep)
         
     
-    print(params,"time="+str(start-time.time()))
+    print(param,"time="+str(start-time.time()))
     
     return 2*a**2*np.sum(p*(1-p),0)
 
@@ -99,13 +99,13 @@ sigma_e2s=np.array([0,1e-4,1e-3,1e-2])
 
 Ls=np.array([100,1000])
 Ns=np.array([1000,10000])
-Vs=np.array([5,20])
-mus=np.array([5e-7,5e-6,5e-5])
+Vs=np.array([5])
+mus=np.array([5e-7,5e-6])
 
 #Mutational heritability = 2 L mu alpha**2
-Vms=np.array([5e-4,5e-3])
+Vms=np.array([5e-4])
 
-reps=np.array([100])
+reps=np.array([1000])
 
 params=[_ for _ in itertools.product(Ls,sigma_e2s,Ns,Vs,mus,Vms,reps)]
 

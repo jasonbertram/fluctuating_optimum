@@ -62,37 +62,39 @@ Vg_sims=np.loadtxt("Vg_sims")
 
 #%%%
 #Generate figures
-
+offset=1e-5
 for i in range(len(params)):
 
     L,sigma_e2,N,V_s,mu,Vm,rep=params[i]
 
-    plt.figure(str([L,N,V_s,mu,Vm,rep]))
-    
-    plt.gca().set_title(str([L,N,V_s,mu,Vm,rep]))
-    
-    #Vg_mean=np.array([np.mean(Vg_sims[str([_,N,V_s,mu])]) for _ in sigma_e2s])
-    
-    #Environmental variance set to 1
-    plt.violinplot(Vg_sims[i]/(Vg_sims[i]+1),positions=[sigma_e2],widths=1e-3,showmeans=True)
-    
-    # print((2.*V_s)**-1*Vm/(2*L*mu))
-    
-    #h_2=Vg_mean/(Vg_mean+1)
-    #plt.plot(sigma_e2s,h_2,label=str(N)+','+str(V_s)+','+str(mu))
-    
     a=np.sqrt(Vm/(2*L*mu))
-    #Vg_theory=0.5*2*L*mu*V_s*(1+np.sqrt(1+sigma_e2s/(V_s*L**2*mu**2)))
-    Vg_theory=scipy.optimize.fsolve(lambda x: Vg_theory_opt(x,N,a,sigma_e2,L,mu,V_s),0.025)[0]
-    plt.plot(sigma_e2, Vg_theory/(Vg_theory+1),'o')
-    
-    
-    Vg_numerical=Vg_pred_consistent(2e-1,N,mu,a,L,sigma_e2,V_s)
-    plt.plot(sigma_e2, Vg_numerical/(Vg_numerical+1),'kx',label='numerical')
-    
-    plt.ylim([0,0.6])
-    plt.xlim([-1e-3,1.2e-2])
-    #plt.legend()
+
+    if a**2<1 and mu<5e-5 and V_s<20 and Vm>5e-5:
+
+        plt.figure(str([L,N,V_s,mu,Vm,rep]))
+        
+        plt.gca().set_title(str([L,N,V_s,mu,Vm,rep]))
+        
+        
+        #Environmental variance set to 1
+        plt.violinplot(Vg_sims[i]/(Vg_sims[i]+1),positions=[np.log10(sigma_e2+offset)],widths=5e-1,showmeans=True)
+        
+        
+        #h_2=Vg_mean/(Vg_mean+1)
+        #plt.plot(sigma_e2s,h_2,label=str(N)+','+str(V_s)+','+str(mu))
+        
+        #Vg_theory=0.5*2*L*mu*V_s*(1+np.sqrt(1+sigma_e2s/(V_s*L**2*mu**2)))
+        
+        Vg_theory=scipy.optimize.fsolve(lambda x: Vg_theory_opt(x,N,a,sigma_e2,L,mu,V_s),0.025)[0]
+        plt.plot(np.log10(sigma_e2+offset), Vg_theory/(Vg_theory+1),'o')
+        
+        
+        Vg_numerical=Vg_pred_consistent(2e-1,N,mu,a,L,sigma_e2,V_s)
+        plt.plot(np.log10(sigma_e2+offset), Vg_numerical/(Vg_numerical+1),'kx',label='numerical')
+        
+        plt.ylim([0,.6])
+        
+        
 
 
 
