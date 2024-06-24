@@ -25,7 +25,7 @@ def rhomap(p):
 def p_prime_sel_opt(p,delt_opt,a,sign,V_s):
     
     S=1/V_s
-    p=pmap(rhomap(p)*np.exp(S*gam*sign*(delt_opt+0.5*a*sign*(2*p-1))))    
+    p=pmap(rhomap(p)*np.exp(S*a*sign*(delt_opt+0.5*a*sign*(2*p-1))))    
     return p
 
 
@@ -38,10 +38,10 @@ def p_prime_sel_opt(p,delt_opt,a,sign,V_s):
 Vg_sims={}
 
 
-L=1000
-rep=5
+L=100
+rep=100
 
-sigma_e2s=np.array([0,1e-3,1e-2])
+sigma_e2s=np.array([1e-5])
 #sigma_e2s=np.array([0])
 
 Ns=np.array([10000])
@@ -49,10 +49,10 @@ Vs=np.array([5])
 #mus=np.array([5e-7,5e-6,5e-5])
 mus=np.array([5e-6])
 
-phist={str(_):np.zeros([maxiter,L,rep]) for _ in sigma_e2s}
-
 #Mutational heritability = 2 L mu alpha**2 (2 comes from diploidy)  
-Vm=5e-4
+Vm=1e-4
+
+phist={str(_):np.zeros([maxiter,L,rep]) for _ in sigma_e2s}
 
 for sigma_e2,NN,V_s,mu in itertools.product(sigma_e2s,Ns,Vs,mus):
     
@@ -114,7 +114,41 @@ for sigma_e2,NN,V_s,mu in itertools.product(sigma_e2s,Ns,Vs,mus):
     Vg_sims[str([sigma_e2,NN,V_s,mu])]=2*a**2*np.sum(p*(1-p),0)
 
             
+           
             
+#%%%
+#Genetic variance versus sigma_e2
+
+params=np.array(list(itertools.product(sigma_e2s,Ns,Vs,mus)))
+
+for N in Ns:
+    for V_s in Vs:
+        for mu in mus:
+            plt.figure()
+
+            offset=1e-7
+            #Vg_mean=np.array([np.mean(Vg_sims[str([_,N,V_s,mu])]) for _ in sigma_e2s])
+
+            plt.violinplot([Vg_sims[str([_,N,V_s,mu])]/(Vg_sims[str([_,N,V_s,mu])]+1) for _ in sigma_e2s],positions=np.log10(sigma_e2s+offset),widths=2e-1,showmedians=True)
+
+            print((2.*V_s)**-1*Vm/(2*L*mu))
+
+            #Environmental variance set to 1
+            #h_2=Vg_mean/(Vg_mean+1)
+            #plt.plot(sigma_e2s,h_2,label=str(N)+','+str(V_s)+','+str(mu))
+
+            # gam=np.sqrt(Vm/(2*L*mu))
+            # #Vg_theory=0.5*2*L*mu*V_s*(1+np.sqrt(1+sigma_e2s/(V_s*L**2*mu**2)))
+            # Vg_theory=np.array([scipy.optimize.fsolve(lambda x: Vg_theory_opt(x,N,gam,_,L,mu,V_s),0.025)[0] for _ in sigma_e2s])
+            # plt.plot(sigma_e2s, Vg_theory/(Vg_theory+1))
+
+
+            # Vg_numerical=np.array([Vg_pred_consistent(2e-1,N,mu,gam,L,sigma_e2,V_s) for sigma_e2 in sigma_e2s])
+            # plt.plot(sigma_e2s, Vg_numerical/(Vg_numerical+1),'k',label='numerical')
+
+            plt.ylim([0,.5])
+            #plt.xlim([-1e-3,1.2e-2])
+            #plt.legend()
 
 
 #%%%
