@@ -30,7 +30,7 @@ def E_H(N,mu,sigma_c2,s):
 
 def Vg_pred(Vg,N,mu,a,L,sigma_e2,V_s):
     s=a**2/(2*V_s)
-    sigma_c2=a**2*sigma_e2/(Vg+0.01)**2
+    sigma_c2=a**2*sigma_e2/(Vg)**2
     return 2*a**2*L*E_H(N,mu,sigma_c2,s)
 
 def Vg_pred_consistent(init,N,mu,a,L,sigma_e2,V_s):
@@ -75,7 +75,7 @@ fig_dict=dict(zip(unique_params,axs))
 
 for i in range(len(params)):
 
-    L,sigma_e2,N,V_s,mu,Vm,rep=params[i]
+    L,sigma_e2,N,V_s,mu,Vm,theta,rep=params[i]
 
     a=np.sqrt(Vm/(2*L*mu))
         

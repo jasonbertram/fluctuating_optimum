@@ -27,16 +27,13 @@ def p_prime_sel_opt(p,delt_opt,gam,sign,V_s):
     return p
 
 
-
-
-
 def simulate(param):
     
     start=time.time()
     
-    L,sigma_e2,N,V_s,mu,Vm,rep=param
+    L,sigma_e2,N,V_s,mu,Vm,theta,rep=param
     
-        a=np.sqrt(Vm/(2*L*mu))
+    a=np.sqrt(Vm/(2*L*mu))
     
     sign=2*np.random.randint(0,2,[L,rep])-1
     
@@ -80,8 +77,7 @@ def simulate(param):
         p=np.random.binomial(N,p_prime_sel_opt(p,opt-zbar,a,sign,V_s))/N
         #p=np.random.binomial(N,p,size=sim_L)/N
         
-        opt=np.random.normal(opt,np.sqrt(sigma_e2),rep)
-        
+        opt=(1-theta)*opt + np.random.normal(0,np.sqrt(sigma_e2),rep)
     
     print(param,"time="+str(start-time.time()))
     
@@ -95,24 +91,25 @@ def simulate(param):
 
 
 
-sigma_e2s=np.array([0,1e-4,1e-3,1e-2])
+sigma_e2s=np.array([0,1e-6,1e-5,1e-4,1e-3,1e-2])
 
 Ls=np.array([100,1000])
 Ns=np.array([1000,10000])
 Vs=np.array([5])
 mus=np.array([5e-7,5e-6])
+thetas=np.array([1e-2])
 
 #Mutational heritability = 2 L mu alpha**2
-Vms=np.array([5e-4])
+Vms=np.array([1e-4])
 
 reps=np.array([1000])
 
-params=[_ for _ in itertools.product(Ls,sigma_e2s,Ns,Vs,mus,Vms,reps)]
+params=[_ for _ in itertools.product(Ls,sigma_e2s,Ns,Vs,mus,Vms,thetas,reps)]
 
 
 
 if __name__ == '__main__':
-    p=Pool(32)
+    p=Pool(16)
     output=np.array(p.map(simulate, params))
     
 
