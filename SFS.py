@@ -38,14 +38,14 @@ def p_prime_sel_opt(p,delt_opt,a,sign,V_s):
 Vg_sims={}
 
 
-L=100
+L=10
 rep=100
 
-sigma_e2s=np.array([1e-5])
+sigma_e2s=np.array([0,1e-3,1e-2])
 #sigma_e2s=np.array([0])
 
-Ns=np.array([10000])
-Vs=np.array([5])
+Ns=np.array([1000])
+Vs=np.array([20])
 #mus=np.array([5e-7,5e-6,5e-5])
 mus=np.array([5e-6])
 
@@ -129,7 +129,7 @@ for N in Ns:
             offset=1e-7
             #Vg_mean=np.array([np.mean(Vg_sims[str([_,N,V_s,mu])]) for _ in sigma_e2s])
 
-            plt.violinplot([Vg_sims[str([_,N,V_s,mu])]/(Vg_sims[str([_,N,V_s,mu])]+1) for _ in sigma_e2s],positions=np.log10(sigma_e2s+offset),widths=2e-1,showmedians=True)
+            plt.violinplot([Vg_sims[str([_,N,V_s,mu])]/(Vg_sims[str([_,N,V_s,mu])]+1) for _ in sigma_e2s],positions=np.log10(sigma_e2s+offset),widths=2e-1,showmeans=True)
 
             print((2.*V_s)**-1*Vm/(2*L*mu))
 
@@ -150,6 +150,31 @@ for N in Ns:
             #plt.xlim([-1e-3,1.2e-2])
             #plt.legend()
 
+
+
+#%%
+#Evolution 2024 
+
+fig, axs=plt.subplots(1,2,figsize=[5,2.5])
+
+axs[0].plot(phist[str(0.0)][-11000:-10000,:,0],linewidth=0.5)
+axs[0].set_ylim([0,1])
+axs[0].set_ylabel(r'Frequency',fontsize=14)
+axs[0].set_title(r'Stationary')
+axs[0].set_xticklabels([])
+axs[0].set_xlim([0,1000])
+
+axs[1].plot(phist[str(1e-2)][-11000:-10000,:,0],linewidth=0.5)
+axs[1].set_xlim([0,1000])
+axs[1].set_ylim([0,1])
+axs[1].set_yticklabels([])
+axs[1].set_title(r'Fluctuating')
+axs[1].set_xticklabels([])
+
+plt.annotate(s=r'Time',xy=(0.52,0.04), xytext=(0.52,0.04),xycoords='figure fraction',fontsize=14)
+
+plt.tight_layout()
+plt.savefig("stat_vs_fluc.pdf")
 
 #%%%
 #SFS
