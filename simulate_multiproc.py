@@ -31,10 +31,11 @@ def simulate(param):
     
     start=time.time()
     
-    L,sigma_e2,N,V_s,mu,a,theta,rep=param
+    L,sigma_e2,N,V_s,mu,a2,theta,rep=param
     
     #a=np.sqrt(Vm/(2*L*mu))
-    
+    a=np.sqrt(a2)
+
     sign=2*np.random.randint(0,2,[L,rep])-1
     
     opt=np.zeros(rep)
@@ -93,13 +94,13 @@ Ns=np.array([10000])
 Vs=np.array([5])
 mus=np.array([5e-6])
 thetas=np.array([0e-2])
-a_s=np.array([0.01,0.02,0.04,0.06,0.08,0.1])
+a2s=np.array([0.01,0.02,0.04,0.06,0.08,0.1])
 #Mutational heritability = 2 L mu alpha**2
 #Vms=np.array([1e-4])
 
 reps=np.array([1000])
 
-params=[_ for _ in itertools.product(Ls,sigma_e2s,Ns,Vs,mus,a_s,thetas,reps)]
+params=[_ for _ in itertools.product(Ls,sigma_e2s,Ns,Vs,mus,a2s,thetas,reps)]
 
 
 if __name__ == '__main__':

@@ -65,7 +65,7 @@ Vg_sims=np.loadtxt("Vg_sims")
 
 offset=1e-7
 
-unique_params=set([str([p[0],p[2],p[3],p[4],p[5]]) for p in params if p[5]/(2*p[0]*p[4])<0.5])
+unique_params=set([str([p[0],p[2],p[3],p[4],p[5]]) for p in params])
 
 fig, axs=plt.subplots(3,2,figsize=[7,7])
 axs=axs.flat
@@ -75,7 +75,7 @@ fig_dict=dict(zip(unique_params,axs))
 
 for i in range(len(params)):
 
-    L,sigma_e2,N,V_s,mu,Vm,theta,rep=params[i]
+    L,sigma_e2,N,V_s,mu,a2,theta,rep=params[i]
 
     a=np.sqrt(Vm/(2*L*mu))
         
