@@ -93,7 +93,7 @@ Ns=np.array([10000])
 Vs=np.array([5])
 mus=np.array([5e-6])
 thetas=np.array([0e-2])
-a_s=np.array(0.01,0.02,0.04,0.06,0.08,0.1])
+a_s=np.array([0.01,0.02,0.04,0.06,0.08,0.1])
 #Mutational heritability = 2 L mu alpha**2
 #Vms=np.array([1e-4])
 
@@ -103,7 +103,7 @@ params=[_ for _ in itertools.product(Ls,sigma_e2s,Ns,Vs,mus,a_s,thetas,reps)]
 
 
 if __name__ == '__main__':
-    p=Pool(16)
+    p=Pool(32)
     output=np.array(p.map(simulate, params))
     
 
