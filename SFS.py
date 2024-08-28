@@ -23,7 +23,6 @@ def rhomap(p):
     return p/(1-p)
 
 def p_prime_sel_opt(p,delt_opt,a,sign,V_s):
-    
     S=1/V_s
     p=pmap(rhomap(p)*np.exp(S*a*sign*(delt_opt+0.5*a*sign*(2*p-1))))    
     return p
@@ -33,51 +32,43 @@ def p_prime_sel_opt(p,delt_opt,a,sign,V_s):
 
 
 #%%%
-#Single processor simulation
+#Single core simulation
 
 Vg_sims={}
 
 
-L=10
+L=100
 rep=100
 
 sigma_e2s=np.array([0,1e-3,1e-2])
 #sigma_e2s=np.array([0])
 
-Ns=np.array([1000])
-Vs=np.array([20])
-#mus=np.array([5e-7,5e-6,5e-5])
+Ns=np.array([10000])
+Vs=np.array([5])
 mus=np.array([5e-6])
-
+a=0.1
 #Mutational heritability = 2 L mu alpha**2 (2 comes from diploidy)  
 Vm=1e-4
 
-phist={str(_):np.zeros([maxiter,L,rep]) for _ in sigma_e2s}
+#phist={str(_):np.zeros([maxiter,L,rep]) for _ in sigma_e2s}
 
-for sigma_e2,NN,V_s,mu in itertools.product(sigma_e2s,Ns,Vs,mus):
-    
+for sigma_e2,N,V_s,mu in itertools.product(sigma_e2s,Ns,Vs,mus):
     #print(sigma_e2,N,V_s,mu,alpha**2/(2*V_s))
-    
-    N=NN
-    
-    a=np.sqrt(Vm/(2*L*mu))
     sign=2*np.random.randint(0,2,[L,rep])-1
     
     opt=np.zeros(rep)
     
     maxiter=int(10*N)
     
-    p=np.zeros([L,rep])
-    
+    p=np.zeros([L,rep]) 
     
     opt_hist=np.zeros([maxiter,rep])
     zbar_hist=np.zeros([maxiter,rep])
-    numfix_hist=np.zeros([maxiter,rep])
-    
+    numfix_hist=np.zeros([maxiter,rep]) 
     
     for t in tqdm(range(maxiter)):
         
-        phist[str(sigma_e2)][t]=np.array(p)
+        #phist[str(sigma_e2)][t]=np.array(p)
         
         fixed_loci_1=(p==1)
         
@@ -99,8 +90,9 @@ for sigma_e2,NN,V_s,mu in itertools.product(sigma_e2s,Ns,Vs,mus):
         np.place(p,mutation_mask,1/N)
         np.place(sign,mutation_mask,2*np.random.randint(0,2,np.sum(mutation_mask))-1)
         
-        poly_loci=np.logical_not(fixed_loci_0) & (p<1-1/N) #new mutants excluded also!
-        
+        #new mutants excluded 
+        poly_loci=np.logical_not(fixed_loci_0) & (p<1-1/N)        
+
         #p[poly_loci]=p[poly_loci]+0*mu*(1-2*p[poly_loci])
         p[poly_loci]=p[poly_loci]+\
             (np.random.rand(np.sum(poly_loci))<N*mu*(1-p[poly_loci]))/N-\
@@ -114,9 +106,8 @@ for sigma_e2,NN,V_s,mu in itertools.product(sigma_e2s,Ns,Vs,mus):
     Vg_sims[str([sigma_e2,NN,V_s,mu])]=2*a**2*np.sum(p*(1-p),0)
 
             
-           
             
-#%%%
+#%%
 #Genetic variance versus sigma_e2
 
 params=np.array(list(itertools.product(sigma_e2s,Ns,Vs,mus)))
