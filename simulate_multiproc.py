@@ -31,9 +31,9 @@ def simulate(param):
     
     start=time.time()
     
-    L,sigma_e2,N,V_s,mu,Vm,theta,rep=param
+    L,sigma_e2,N,V_s,mu,a,theta,rep=param
     
-    a=np.sqrt(Vm/(2*L*mu))
+    #a=np.sqrt(Vm/(2*L*mu))
     
     sign=2*np.random.randint(0,2,[L,rep])-1
     
@@ -58,11 +58,6 @@ def simulate(param):
         fixed_loci_0=(p==0)
         mutation_mask=((np.random.rand(L,rep)<N*mu) & fixed_loci_0)
         
-        # zbar_hist[t]=zbar
-        # opt_hist[t]=opt
-        # numfix_hist[t]=np.sum(fixed_loci_1,0)
-        
-             
         np.place(p,mutation_mask,1/N)
         np.place(sign,mutation_mask,2*np.random.randint(0,2,np.sum(mutation_mask))-1)
         
@@ -86,26 +81,25 @@ def simulate(param):
 
 
 ####################################
-#Parallel simulator
+#Parallel simulator. One core per parameter vector.
 #Will not run in interactive mode
 
 
 
 sigma_e2s=np.array([0,1e-6,1e-5,1e-4,1e-3,1e-2])
 
-Ls=np.array([100,1000])
-Ns=np.array([1000,10000])
+Ls=np.array([100])
+Ns=np.array([10000])
 Vs=np.array([5])
-mus=np.array([5e-7,5e-6])
-thetas=np.array([1e-2])
-
+mus=np.array([5e-6])
+thetas=np.array([0e-2])
+a_s=np.array(0.01,0.02,0.04,0.06,0.08,0.1])
 #Mutational heritability = 2 L mu alpha**2
-Vms=np.array([1e-4])
+#Vms=np.array([1e-4])
 
 reps=np.array([1000])
 
-params=[_ for _ in itertools.product(Ls,sigma_e2s,Ns,Vs,mus,Vms,thetas,reps)]
-
+params=[_ for _ in itertools.product(Ls,sigma_e2s,Ns,Vs,mus,a_s,thetas,reps)]
 
 
 if __name__ == '__main__':
