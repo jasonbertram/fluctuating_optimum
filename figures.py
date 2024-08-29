@@ -18,14 +18,22 @@ def phi_not_normed(x,N,mu,sigma_c2,s):
     if sigma_c2==0:
         return np.exp(-2*N*s*x*(1-x))*(x*(1-x))**(2*N*mu-1)
     else:
-        return (1+N*sigma_c2*x*(1-x))**(-2*s/sigma_c2-2*N*mu)/(x*(1-x))**(1-2*N*mu)
+        return ((1+N*sigma_c2*x*(1-x))**(-2*s/sigma_c2-2*N*mu)
+                /(x*(1-x))**(1-2*N*mu))
     
 
 def phi_norm_const(N,mu,sigma_c2,s):
-    return 0.5/(integrate.quad(lambda x: phi_not_normed(x,N,mu,sigma_c2,s),0/N,1/N)[0]+integrate.quad(lambda x: phi_not_normed(x,N,mu,sigma_c2,s),1/N,0.5)[0])
+    return (0.5/(integrate.quad(lambda x: 
+            phi_not_normed(x,N,mu,sigma_c2,s),0/N,1/N)[0]
+            +integrate.quad(lambda x: 
+            phi_not_normed(x,N,mu,sigma_c2,s),1/N,0.5)[0]))
 
 def E_H(N,mu,sigma_c2,s):
-    return 2*(integrate.quad(lambda x: x*(1-x)*phi_not_normed(x,N,mu,sigma_c2,s),0/N,1/N)[0]+integrate.quad(lambda x: x*(1-x)*phi_not_normed(x,N,mu,sigma_c2,s),1/N,0.5)[0])*phi_norm_const(N,mu,sigma_c2,s)
+    return (2*(integrate.quad(lambda x: x*(1-x)
+            *phi_not_normed(x,N,mu,sigma_c2,s),0/N,1/N)[0]
+            +integrate.quad(lambda x: x*(1-x)
+            *phi_not_normed(x,N,mu,sigma_c2,s),1/N,0.5)[0])
+            *phi_norm_const(N,mu,sigma_c2,s))
 
 
 def Vg_pred(Vg,N,mu,a,L,sigma_e2,V_s):
@@ -34,7 +42,8 @@ def Vg_pred(Vg,N,mu,a,L,sigma_e2,V_s):
     return 2*a**2*L*E_H(N,mu,sigma_c2,s)
 
 def Vg_pred_consistent(init,N,mu,a,L,sigma_e2,V_s):
-    res = scipy.optimize.minimize(lambda x: (Vg_pred(x,N,mu,a,L,sigma_e2,V_s)-x)**2, init)
+    res = (scipy.optimize.minimize(lambda x: 
+            (Vg_pred(x,N,mu,a,L,sigma_e2,V_s)-x)**2, init))
     return res.x[0]
 
 
@@ -49,10 +58,11 @@ def Vg_theory_opt(x,N,a,so2,L,mu,Vs):
         b=x**2/(Vs*so2)-2*N*mu
         b_t=b/(d+1)
     
-        return (2*N*mu)*(2*L*a**2)*d**b_t*(d**(1-b_t)-(0.5+d)**(1-b_t))/(b_t-1)-x
+        return ((2*N*mu)*(2*L*a**2)*d**b_t*(d**(1-b_t)
+                -(0.5+d)**(1-b_t))/(b_t-1)-x)
 
 
-#%%%
+#%%
 #Load data
 
 with open("Vg_sims",'r') as fin:
@@ -60,12 +70,51 @@ with open("Vg_sims",'r') as fin:
 
 Vg_sims=np.loadtxt("Vg_sims")
 
-#%%%
-#Generate figures
-
+#%%
+########################################
 offset=1e-7
 
-unique_params=set([str([p[0],p[2],p[3],p[4],p[5]]) for p in params])
+for i in range(len(params)):
+
+    L,sigma_e2,N,V_s,mu,a2,theta,rep=params[i]
+    plt.figure(str([L,N,V_s,mu,a2]))
+    ax=plt.gca() 
+     
+    #Simulated heritability violinplots
+    #Environmental variance = 1
+    ax.violinplot(Vg_sims[i]/(Vg_sims[i]+1),
+            positions=[np.sqrt(sigma_e2+offset)],widths=1e-2,showmeans=True)
+    
+    #h_2=Vg_mean/(Vg_mean+1)
+    #plt.plot(sigma_e2s,h_2,label=str(N)+','+str(V_s)+','+str(mu))
+    
+    #Vg_theory=0.5*2*L*mu*V_s*(1+np.sqrt(1+sigma_e2s/(V_s*L**2*mu**2)))
+    
+    #a=np.sqrt(Vm/(2*L*mu))
+    #a=np.sqrt(a2)
+    #Vg_theory=scipy.optimize.fsolve(lambda x: \
+    #        Vg_theory_opt(x,N,a,sigma_e2,L,mu,V_s),0.025)[0]
+    #ax.plot(np.log10(sigma_e2+offset), Vg_theory/(Vg_theory+1),
+    #        'ko',fillstyle='none',markersize=8,
+    #        label=r'Theory analytical',alpha=0.7)
+    #
+    #Vg_numerical=Vg_pred_consistent(2e-1,N,mu,a,L,sigma_e2,Vs)
+    #ax.plot(np.log10(sigma_e2+offset), Vg_numerical/(Vg_numerical+1),
+    #        'kx',markersize=10,label=r'Theory numerical',alpha=0.7)
+    #
+    
+    ax.set_ylim([0,.5])
+
+for _ in plt.get_figlabels():
+    plt.figure(_)
+    plt.savefig('/home/jason/git/fluctuating_optimum/'+_+'.png')
+
+plt.close('all')
+
+#%%
+#multipanel sigma2 dependency
+offset=1e-7
+
 
 fig, axs=plt.subplots(3,2,figsize=[7,7])
 axs=axs.flat
@@ -77,33 +126,31 @@ for i in range(len(params)):
 
     L,sigma_e2,N,V_s,mu,a2,theta,rep=params[i]
 
-    a=np.sqrt(Vm/(2*L*mu))
-        
-    if a<0.5:
+    #a=np.sqrt(Vm/(2*L*mu))
+    a=np.sqrt(a2)
 
-        ax=fig_dict[str([L,N,V_s,mu,Vm])]
-        
-        
-        #Environmental variance set to 1
-        ax.violinplot(Vg_sims[i]/(Vg_sims[i]+1),positions=[np.log10(sigma_e2+offset)],widths=0.75,showmeans=True)
-        
-        
-        #h_2=Vg_mean/(Vg_mean+1)
-        #plt.plot(sigma_e2s,h_2,label=str(N)+','+str(V_s)+','+str(mu))
-        
-        #Vg_theory=0.5*2*L*mu*V_s*(1+np.sqrt(1+sigma_e2s/(V_s*L**2*mu**2)))
-        
-        Vg_theory=scipy.optimize.fsolve(lambda x: Vg_theory_opt(x,N,a,sigma_e2,L,mu,V_s),0.025)[0]
-        ax.plot(np.log10(sigma_e2+offset), Vg_theory/(Vg_theory+1),'ko',fillstyle='none',markersize=8,label=r'Theory analytical',alpha=0.7)
-        
-        
-        Vg_numerical=Vg_pred_consistent(2e-1,N,mu,a,L,sigma_e2,V_s)
-        ax.plot(np.log10(sigma_e2+offset), Vg_numerical/(Vg_numerical+1),'kx',markersize=10,label=r'Theory numerical',alpha=0.7)
-        
-        
-        
-        ax.set_ylim([0,.5])
-        ax.set_title(r'$L=$'+str(L)+r'$,N=$'+str(N)+r'$,\mu=$'+str(mu),y=.83,fontsize=11)
+    ax=fig_dict[str([L,N,V_s,mu,a2])]
+    
+    #Environmental variance set to 1
+    ax.violinplot(Vg_sims[i]/(Vg_sims[i]+1),positions=[np.log10(sigma_e2+offset)],widths=0.75,showmeans=True)
+    
+    
+    #h_2=Vg_mean/(Vg_mean+1)
+    #plt.plot(sigma_e2s,h_2,label=str(N)+','+str(V_s)+','+str(mu))
+    
+    #Vg_theory=0.5*2*L*mu*V_s*(1+np.sqrt(1+sigma_e2s/(V_s*L**2*mu**2)))
+    
+    Vg_theory=scipy.optimize.fsolve(lambda x: Vg_theory_opt(x,N,a,sigma_e2,L,mu,V_s),0.025)[0]
+    ax.plot(np.log10(sigma_e2+offset), Vg_theory/(Vg_theory+1),'ko',fillstyle='none',markersize=8,label=r'Theory analytical',alpha=0.7)
+    
+    
+    Vg_numerical=Vg_pred_consistent(2e-1,N,mu,a,L,sigma_e2,V_s)
+    ax.plot(np.log10(sigma_e2+offset), Vg_numerical/(Vg_numerical+1),'kx',markersize=10,label=r'Theory numerical',alpha=0.7)
+    
+    
+    
+    ax.set_ylim([0,.5])
+    ax.set_title(r'$L=$'+str(L)+r'$,N=$'+str(N)+r'$,\mu=$'+str(mu),y=.83,fontsize=11)
                     
 
 
