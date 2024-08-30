@@ -70,20 +70,27 @@ with open("Vg_sims",'r') as fin:
 
 Vg_sims=np.loadtxt("Vg_sims")
 
+#parameter format: L,sigma_e2,N,V_s,mu,a2,theta,rep
+
 #%%
 ########################################
+#small offset to avoid log(0)
 offset=1e-7
+
+#index of variable on x axis
+xvar=5
 
 for i in range(len(params)):
 
-    L,sigma_e2,N,V_s,mu,a2,theta,rep=params[i]
-    plt.figure(str([L,N,V_s,mu,a2]))
+    #L,sigma_e2,N,V_s,mu,a2,theta,rep=params[i]
+    plt.figure(str([_ for ind,_ in enumerate(params[i]) if ind != xvar]))
     ax=plt.gca() 
      
     #Simulated heritability violinplots
     #Environmental variance = 1
     ax.violinplot(Vg_sims[i]/(Vg_sims[i]+1),
-            positions=[np.sqrt(sigma_e2+offset)],widths=1e-2,showmeans=True)
+            positions=[params[i][xvar]+offset],
+                  widths=1e-2,showmeans=True)
     
     #h_2=Vg_mean/(Vg_mean+1)
     #plt.plot(sigma_e2s,h_2,label=str(N)+','+str(V_s)+','+str(mu))
