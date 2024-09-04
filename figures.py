@@ -83,33 +83,31 @@ xvar=5
 
 for i in range(len(params)):
 
-    #L,sigma_e2,N,V_s,mu,a2,theta,rep=params[i]
     plt.figure(str([_ for ind,_ in enumerate(params[i]) if ind != xvar]))
     ax=plt.gca() 
      
     #Simulated heritability violinplots
     #Environmental variance = 1
-    ax.violinplot(Vg_sims[i]/(Vg_sims[i]+1),
+    ax.violinplot(
+            Vg_sims[i]/(Vg_sims[i]+1),
             positions=[params[i][xvar]+offset],
-                  widths=1e-2,showmeans=True)
+            widths=1e-2,showmeans=True)
     
-    #h_2=Vg_mean/(Vg_mean+1)
-    #plt.plot(sigma_e2s,h_2,label=str(N)+','+str(V_s)+','+str(mu))
+    L,sigma_e2,N,V_s,mu,a2,theta,rep=params[i]
+    a=np.sqrt(a2)
     
-    #Vg_theory=0.5*2*L*mu*V_s*(1+np.sqrt(1+sigma_e2s/(V_s*L**2*mu**2)))
+    Vg_theory=scipy.optimize.fsolve(
+            lambda x: Vg_theory_opt(x,N,a,sigma_e2,L,mu,V_s),0.025)[0]
+    ax.plot(
+            params[i][xvar]+offset, Vg_theory/(Vg_theory+1),
+            'ko',fillstyle='none',markersize=8,
+            label=r'Theory analytical',alpha=0.7)
     
-    #a=np.sqrt(Vm/(2*L*mu))
-    #a=np.sqrt(a2)
-    #Vg_theory=scipy.optimize.fsolve(lambda x: \
-    #        Vg_theory_opt(x,N,a,sigma_e2,L,mu,V_s),0.025)[0]
-    #ax.plot(np.log10(sigma_e2+offset), Vg_theory/(Vg_theory+1),
-    #        'ko',fillstyle='none',markersize=8,
-    #        label=r'Theory analytical',alpha=0.7)
-    #
-    #Vg_numerical=Vg_pred_consistent(2e-1,N,mu,a,L,sigma_e2,Vs)
-    #ax.plot(np.log10(sigma_e2+offset), Vg_numerical/(Vg_numerical+1),
-    #        'kx',markersize=10,label=r'Theory numerical',alpha=0.7)
-    #
+    Vg_numerical=Vg_pred_consistent(2e-1,N,mu,a,L,sigma_e2,V_s)
+    ax.plot(
+            params[i][xvar]+offset, Vg_numerical/(Vg_numerical+1),
+            'kx',markersize=10,
+            label=r'Theory numerical',alpha=0.7)
     
     ax.set_ylim([0,.5])
 
