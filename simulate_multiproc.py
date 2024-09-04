@@ -67,8 +67,9 @@ def simulate(param):
         #p=np.random.binomial(N,p,size=sim_L)/N
         
         opt=(1-theta)*opt + np.random.normal(0,np.sqrt(sigma_e2),rep)
-    
-    print(param,"time="+str(start-time.time()))
+
+    with open('log.txt','a') as f:
+        f.write(str(param)+": " + "time="+str(time.time()-start))
     
     return 2*a**2*np.sum(p*(1-p),0)
 
