@@ -6,8 +6,9 @@ Created on Thu May 30 14:31:48 2024
 """
 import numpy as np
 import itertools
-from multiprocessing import Pool
 import time
+import ray
+import os
 
 #Simulation functions
 #======================
@@ -23,6 +24,7 @@ def p_prime_sel_opt(p,delt_opt,gam,sign,V_s):
     p=pmap(rhomap(p)*np.exp(2*S*gam*sign*(delt_opt+0.5*gam*sign*(2*p-1))))    
     return p
 
+@ray.remote
 def simulate(param):
     
     start=time.time()
@@ -75,13 +77,12 @@ def simulate(param):
 
 ####################################
 #Parallel simulator. One core per parameter vector.
-#Will not run in interactive mode (ipython)
-#Have not tested on more than one node
+#Uses ray for multi-node
 
 sigma_e2s=np.array([0,1e-4,5e-4,1e-3,5e-3,1e-2])
-Ls=np.array([100,1000])
-Ns=np.array([1000,10000])
-Vs=np.array([5,20])
+Ls=np.array([100])
+Ns=np.array([1000])
+Vs=np.array([5])
 mus=np.array([5e-6])
 thetas=np.array([0e-2])
 a2s=np.array([0.01,0.02,0.04,0.06,0.08,0.1])
@@ -91,8 +92,10 @@ reps=np.array([1000])
 
 params=[_ for _ in itertools.product(Ls,sigma_e2s,Ns,Vs,mus,a2s,thetas,reps)]
 
-if __name__ == '__main__':
-    p=Pool(32)
-    output=np.array(p.map(simulate, params))
-    
+# Connect to Ray cluster
+ray.init(address=f"{os.environ['HEAD_NODE']}:{os.environ['RAY_PORT']}",_node_ip_address=os.environ['HEAD_NODE'])
+
+futures = [simulate.remote(_) for _ in params]
+output = np.array(ray.get(futures))
+
 np.savetxt("Vg_sims",output,header=str(params))
