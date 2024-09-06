@@ -8,7 +8,7 @@ if [[ "$SLURM_PROCID" -eq "0" ]]; then
         sleep 10
 
 else
-        ray start --address "${HEAD_NODE}:${RAY_PORT}" --num-cpus="${SLURM_CPUS_PER_TASK}" --num-gpus=1 --block
+        ray start --address "${HEAD_NODE}:${RAY_PORT}" --num-cpus="${SLURM_CPUS_PER_TASK}" --block
         sleep 5
         echo "ray worker started!"
 fi

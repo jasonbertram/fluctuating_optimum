@@ -1,7 +1,10 @@
 #!/bin/bash
 #SBATCH --nodes 2
-#SBATCH --cpus-per-task=18
-#SBATCH --time=01:00:00
+#SBATCH --cpus-per-task=8
+#SBATCH --time=00:30:00
+#SBATCH --ntasks-per-node=1
+#
+#module load python scipy-stack
 
 ## Create a virtualenv and install Ray on all nodes ##
 srun -N $SLURM_NNODES -n $SLURM_NNODES config_env.sh
@@ -19,8 +22,9 @@ sleep 10
 srun launch_ray.sh &
 ray_cluster_pid=$!
 
-module load python-stack
-python simulate_multiproc.py
+#srun python simulate_multiproc.py
+#srun python test_ray.py
+python test_ray.py
 
 ## Shut down Ray worker nodes after the Python script exits ##
 kill $ray_cluster_pid

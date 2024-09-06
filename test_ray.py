@@ -1,5 +1,6 @@
 import ray
 import os
+#import numpy
 
 # Connect to Ray cluster
 ray.init(address=f"{os.environ['HEAD_NODE']}:{os.environ['RAY_PORT']}",_node_ip_address=os.environ['HEAD_NODE'])

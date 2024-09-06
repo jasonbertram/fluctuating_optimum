@@ -73,6 +73,7 @@ def simulate(param):
     with open('log.txt','a') as f:
         f.write(str(param)+": " + "time="+str(time.time()-start))
     
+    print("================================"+str(param))
     return 2*a**2*np.sum(p*(1-p),0)
 
 ####################################
@@ -88,7 +89,7 @@ thetas=np.array([0e-2])
 a2s=np.array([0.01,0.02,0.04,0.06,0.08,0.1])
 #Mutational heritability = 2 L mu alpha**2
 #Vms=np.array([1e-4])
-reps=np.array([1000])
+reps=np.array([100])
 
 params=[_ for _ in itertools.product(Ls,sigma_e2s,Ns,Vs,mus,a2s,thetas,reps)]
 
