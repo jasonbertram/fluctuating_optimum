@@ -89,7 +89,7 @@ params=[_ for _ in
         ]
 
 for param in params:
-    Vg_local=simulate(params)
+    Vg_local=simulate(param)
 
     output=np.empty([size,rep_local],dtype='f')
     comm.Gather(Vg_local,output,root=0)
