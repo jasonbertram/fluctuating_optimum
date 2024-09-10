@@ -93,7 +93,7 @@ for param in params:
 
     recvbuf=None
     if rank==0:
-        recvbuf=np.empty([size,rep_local],dtype='f')
+        recvbuf=np.empty([size,rep_local],dtype='d')
     comm.Gather(Vg_local,recvbuf,root=0)
 
     if rank==0:
