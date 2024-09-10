@@ -69,21 +69,20 @@ def simulate(param):
 ####################################
 #Parallel handling of replicates with MPI.
 
-#sigma_e2s=np.array([0,1e-4,5e-4,1e-3,5e-3,1e-2])
-sigma_e2s=np.array([0,1e-4])
-Ls=np.array([1000])
-Ns=np.array([10000])
-Vs=np.array([5])
+sigma_e2s=np.array([0,1e-4,5e-4,1e-3,5e-3,1e-2])
+Ls=np.array([100,1000])
+Ns=np.array([1000,10000])
+Vs=np.array([5,20])
 mus=np.array([5e-6])
 thetas=np.array([0e-2])
-#a2s=np.array([0.01,0.02,0.04,0.06,0.08,0.1])
-a2s=np.array([0.01])
+a2s=np.array([0.01,0.02,0.04,0.06,0.08,0.1])
 all_reps=1000
 
 comm = MPI.COMM_WORLD
 size = comm.Get_size()
 rank = comm.Get_rank()
 
+#number of replicates handled by each core
 rep_local=int(all_reps/size)
 params=[_ for _ in 
         itertools.product(Ls,sigma_e2s,Ns,Vs,mus,a2s,thetas,[rep_local])
