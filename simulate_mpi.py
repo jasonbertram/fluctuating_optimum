@@ -97,7 +97,7 @@ for param in params:
     comm.Gather(Vg_local,recvbuf,root=0)
 
     if rank==0:
-        print(output)
+        print(recvbuf)
 #params=[_ for _ in
 #        itertools.product(Ls,sigma_e2s,Ns,Vs,mus,a2s,thetas,reps)
 #        ]
