@@ -72,13 +72,13 @@ def simulate(param):
 #sigma_e2s=np.array([0,1e-4,5e-4,1e-3,5e-3,1e-2])
 sigma_e2s=np.array([0,1e-4])
 Ls=np.array([1000])
-Ns=np.array([10000])
+Ns=np.array([1000])
 Vs=np.array([5])
 mus=np.array([5e-6])
 thetas=np.array([0e-2])
 #a2s=np.array([0.01,0.02,0.04,0.06,0.08,0.1])
 a2s=np.array([0.01])
-all_reps=1000
+all_reps=100
 
 comm = MPI.COMM_WORLD
 size = comm.Get_size()
