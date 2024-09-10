@@ -91,10 +91,12 @@ params=[_ for _ in
 for param in params:
     Vg_local=simulate(param)
 
-    output=np.empty([size,rep_local],dtype='f')
-    comm.Gather(Vg_local,output,root=0)
+    recvbuf=None
+    if rank==0:
+        recvbuf=np.empty([size,rep_local],dtype='f')
+    comm.Gather(Vg_local,recvbuf,root=0)
 
-    if comm.rank==0:
+    if rank==0:
         print(output)
 #params=[_ for _ in
 #        itertools.product(Ls,sigma_e2s,Ns,Vs,mus,a2s,thetas,reps)
