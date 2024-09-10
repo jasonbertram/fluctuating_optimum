@@ -19,7 +19,5 @@ recvbuf=recvbuf**2
 output=np.empty([size,10],dtype='i')
 comm.Gather(recvbuf,output,root=0)
 
-print(rank,output)
-
-#if comm.rank==0:
-#    print(output)
+if comm.rank==0:
+    print(output)
