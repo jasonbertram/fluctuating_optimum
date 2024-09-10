@@ -5,10 +5,11 @@ comm = MPI.COMM_WORLD
 size = comm.Get_size()
 rank = comm.Get_rank()
 
+sendbuf=None
 if comm.rank==0:
     sendbuf=np.array(
             [[i+j for i in range(10)] for j in range(size)]
-            ,dtype=float32)
+            ,dtype='f')
 
 recvbuf=None
 
