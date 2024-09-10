@@ -78,7 +78,7 @@ mus=np.array([5e-6])
 thetas=np.array([0e-2])
 #a2s=np.array([0.01,0.02,0.04,0.06,0.08,0.1])
 a2s=np.array([0.01])
-all_reps=100
+all_reps=1000
 
 comm = MPI.COMM_WORLD
 size = comm.Get_size()
