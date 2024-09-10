@@ -14,8 +14,12 @@ if comm.rank==0:
 recvbuf = np.empty(10, dtype='i')
 comm.Scatter(sendbuf,recvbuf,root=0)
 
-print(rank,recvbuf)
-#output=comm.Gather(outputs,root=0)
+recvbuf=recvbuf**2
+
+output=np.empty([size,10],dtype='i')
+comm.Gather(recvbuf,output,root=0)
+
+print(rank,output)
 
 #if comm.rank==0:
 #    print(output)
