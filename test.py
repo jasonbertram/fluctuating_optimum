@@ -9,10 +9,9 @@ sendbuf=None
 if comm.rank==0:
     sendbuf=np.array(
             [[i+j for i in range(10)] for j in range(size)]
-            ,dtype='f')
+            ,dtype='i')
 
-recvbuf=None
-
+recvbuf = np.empty(10, dtype='i')
 comm.Scatter(sendbuf,recvbuf,root=0)
 
 print(rank,recvbuf)
