@@ -89,6 +89,7 @@ params=[_ for _ in
         ]
 
 for param in params:
+    start=time.time()
     Vg_local=simulate(param)
 
     recvbuf=None
@@ -97,7 +98,8 @@ for param in params:
     comm.Gather(Vg_local,recvbuf,root=0)
 
     if rank==0:
-        print(recvbuf)
+        print((time.time()-start)/60)
+        print(recvbuf.flatten())
 #params=[_ for _ in
 #        itertools.product(Ls,sigma_e2s,Ns,Vs,mus,a2s,thetas,reps)
 #        ]
