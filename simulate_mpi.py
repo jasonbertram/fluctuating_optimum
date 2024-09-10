@@ -104,7 +104,7 @@ for param in params:
         output.append(recvbuf.flatten())
 
 params=[_ for _ in
-        itertools.product(Ls,sigma_e2s,Ns,Vs,mus,a2s,thetas,all_reps)
+        itertools.product(Ls,sigma_e2s,Ns,Vs,mus,a2s,thetas,[all_reps])
         ]
 
 np.savetxt("Vg_sims",output,header=str(params))
