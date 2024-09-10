@@ -85,7 +85,7 @@ rank = comm.Get_rank()
 
 rep_local=int(reps/size)
 params=[_ for _ in 
-        itertools.product(Ls,sigma_e2s,Ns,Vs,mus,a2s,thetas,rep_local))
+        itertools.product(Ls,sigma_e2s,Ns,Vs,mus,a2s,thetas,rep_local)
         ]
 
 for param in params:
