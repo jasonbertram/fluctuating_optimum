@@ -17,8 +17,6 @@ comm.Scatter(sendbuf,recvbuf,root=0)
 recvbuf=recvbuf**2
 
 output=np.empty([size,10],dtype='i')
-print(rank,output)
-
 comm.Gather(recvbuf,output,root=0)
 
 print(rank,output)
