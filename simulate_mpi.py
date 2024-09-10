@@ -77,7 +77,7 @@ mus=np.array([5e-6])
 thetas=np.array([0e-2])
 #a2s=np.array([0.01,0.02,0.04,0.06,0.08,0.1])
 a2s=np.array([0.01])
-all_reps=100
+all_reps=1000
 
 comm = MPI.COMM_WORLD
 size = comm.Get_size()
@@ -88,6 +88,7 @@ params=[_ for _ in
         itertools.product(Ls,sigma_e2s,Ns,Vs,mus,a2s,thetas,[rep_local])
         ]
 
+output=[]
 for param in params:
     start=time.time()
     Vg_local=simulate(param)
@@ -99,9 +100,10 @@ for param in params:
 
     if rank==0:
         print((time.time()-start)/60)
-        print(recvbuf.flatten())
-#params=[_ for _ in
-#        itertools.product(Ls,sigma_e2s,Ns,Vs,mus,a2s,thetas,reps)
-#        ]
-#
-#np.savetxt("Vg_sims",output,header=str(params))
+        output.append(recvbuf.flatten())
+
+params=[_ for _ in
+        itertools.product(Ls,sigma_e2s,Ns,Vs,mus,a2s,thetas,reps)
+        ]
+
+np.savetxt("Vg_sims",output,header=str(params))
