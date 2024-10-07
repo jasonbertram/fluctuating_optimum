@@ -66,49 +66,72 @@ def Vg_theory_opt(x,N,a,so2,L,mu,Vs):
 #%%
 #Load data
 
-with open("Vg_sims",'r') as fin:
+fname="Vg_sims_th0"
+with open(fname,'r') as fin:
     params=ast.literal_eval(fin.readline()[2:-1])
 
-Vg_sims=np.loadtxt("Vg_sims")
+Vg_sims=np.loadtxt(fname)
 
-#parameter format: L,sigma_e2,N,V_s,mu,a2,theta,rep
 
 #%%
 ########################################
 #small offset to avoid log(0)
 offset=1e-7
 
+#parameter format: L,sigma_e2,N,V_s,mu,a2,theta,rep
 #index of variable on x axis
-xvar=5
+xvar=1
+
+#log x axis option
+logx=True
 
 for i in range(len(params)):
 
     plt.figure(str([_ for ind,_ in enumerate(params[i]) if ind != xvar]))
     ax=plt.gca() 
-     
-    #Simulated heritability violinplots
-    #Environmental variance = 1
-    ax.violinplot(
-            Vg_sims[i]/(Vg_sims[i]+1),
-            positions=[params[i][xvar]+offset],
-            widths=1e-2,showmeans=True)
-    
+
     L,sigma_e2,N,V_s,mu,a2,theta,rep=params[i]
     a=np.sqrt(a2)
     
     Vg_theory=scipy.optimize.fsolve(
             lambda x: Vg_theory_opt(x,N,a,sigma_e2,L,mu,V_s),0.025)[0]
-    ax.plot(
-            params[i][xvar]+offset, Vg_theory/(Vg_theory+1),
-            'ko',fillstyle='none',markersize=8,
-            label=r'Theory analytical',alpha=0.7)
     
     Vg_numerical=Vg_pred_consistent(2e-1,N,mu,a,L,sigma_e2,V_s)
-    ax.plot(
-            params[i][xvar]+offset, Vg_numerical/(Vg_numerical+1),
-            'kx',markersize=10,
-            label=r'Theory numerical',alpha=0.7)
-    
+    #Simulated heritability violinplots
+    #Environmental variance = 1
+    if logx==True:  
+        ax.violinplot(
+                Vg_sims[i]/(Vg_sims[i]+1),
+                positions=[np.log10(params[i][xvar]+offset)],
+                widths=2e-1,showmeans=True)
+        
+        ax.plot(
+                np.log10(params[i][xvar]+offset),
+                Vg_theory/(Vg_theory+1),
+                'ko',fillstyle='none',markersize=8,
+                label=r'Theory analytical',alpha=0.7)
+        
+        ax.plot(
+                np.log10(params[i][xvar]+offset),
+                Vg_numerical/(Vg_numerical+1),
+                'kx',markersize=10,
+                label=r'Theory numerical',alpha=0.7)
+    else:
+        ax.violinplot(
+                Vg_sims[i]/(Vg_sims[i]+1),
+                positions=[params[i][xvar]+offset],
+                widths=1e-3,showmeans=True)
+        
+        ax.plot(
+                params[i][xvar]+offset, Vg_theory/(Vg_theory+1),
+                'ko',fillstyle='none',markersize=8,
+                label=r'Theory analytical',alpha=0.7)
+        
+        ax.plot(
+                params[i][xvar]+offset, Vg_numerical/(Vg_numerical+1),
+                'kx',markersize=10,
+                label=r'Theory numerical',alpha=0.7)
+       
     ax.set_ylim([0,.5])
 
 for _ in plt.get_figlabels():
