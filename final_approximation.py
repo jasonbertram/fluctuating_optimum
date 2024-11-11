@@ -1,11 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
-N=1000
+N=10000
 sigma2=1e-2
 a2=1e-1
 Vs=5
 ss=a2/(2*Vs)
 L=1000
+mu=5e-6
 
 def sigma_a2(a2, sigma2, Vg):
     return a2*sigma2/Vg**2
@@ -17,7 +18,7 @@ def bbar(ss, a2, sigma2, Vg):
 def d(a2,sigma2,Vg):
     return -.5 + np.sqrt(1/4 + 1/(N*sigma_a2(a2,sigma2,Vg)))
 
-C=4*N*L*a2*5e-6
+C=4*N*L*a2*mu
 
 plt.figure()
 x=np.linspace(1e-2,1,1000)

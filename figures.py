@@ -48,15 +48,13 @@ def Vg_pred_consistent(init,N,mu,a,L,sigma_e2,V_s):
     return res.x[0]
 
 
-def Vg_theory_opt(x,N,a,so2,L,mu,Vs):
-    
-    if so2==0:
-        return x-4*L*mu*V_s
-    
+def Vg_theory_opt(x,N,a,sigma_e2,L,mu,Vs):
+    if sigma_e2==0:
+        return x-4*L*mu*Vs
     else: 
-        sc2=a**2*so2/x**2
+        sc2=a**2*sigma_e2/x**2
         d=np.abs(0.5*(1-np.sqrt(1+4/(N*sc2))))
-        b=x**2/(Vs*so2)-2*N*mu
+        b=x**2/(Vs*sigma_e2)-2*N*mu
         b_t=b/(d+1)
     
         return ((2*N*mu)*(2*L*a**2)*d**b_t*(d**(1-b_t)
@@ -170,6 +168,7 @@ for i in range(len(params)):
     #Vg_theory=0.5*2*L*mu*V_s*(1+np.sqrt(1+sigma_e2s/(V_s*L**2*mu**2)))
     
     Vg_theory=scipy.optimize.fsolve(lambda x: Vg_theory_opt(x,N,a,sigma_e2,L,mu,V_s),0.025)[0]
+    
     ax.plot(np.log10(sigma_e2+offset), Vg_theory/(Vg_theory+1),'ko',fillstyle='none',markersize=8,label=r'Theory analytical',alpha=0.7)
     
     
