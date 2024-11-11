@@ -1,11 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
-N=10000
+N=1000
 sigma2=1e-2
 a2=1e-1
 Vs=5
 ss=a2/(2*Vs)
-L=100
+L=1000
 
 def sigma_a2(a2, sigma2, Vg):
     return a2*sigma2/Vg**2
@@ -27,21 +27,22 @@ plt.plot(x,C*d(a2,sigma2,x)**bbar(ss,a2,sigma2,x)\
         -(0.5+d(a2,sigma2,x))**(1-bbar(ss,a2,sigma2,x))) \
         )
     
-plt.plot(x,C*d(a2,sigma2,x)\
+plt.plot(x,-C*d(a2,sigma2,x)**bbar(ss,a2, sigma2, x)\
         /(bbar(ss,a2, sigma2, x) -1) \
-        *(1\
-        -0*(0.5/d(a2,sigma2,x)+1)**(1-bbar(ss,a2,sigma2,x)))\
-        )
-
-plt.plot(x,C*d(a2,sigma2,x)\
-        /(bbar(ss,a2, sigma2, x) -1)-x \
-        *(1\
-        -0*(0.5/d(a2,sigma2,x)+1)**(1-bbar(ss,a2,sigma2,x)))\
-        )
+        *(1/2))
 
 
+plt.plot(x,C*d(a2,sigma2,x)**bbar(ss,a2, sigma2, x)\
+        *(1/2))
 
-#plt.plot(x,0.5*C*(1-0.5*np.log(N*0.1**2/(sigma2*a2))*(ss/(a2*sigma2))*x**2))
+#plt.plot(x,C*d(a2,sigma2,x)\
+#        /(bbar(ss,a2, sigma2, x) -1)-x \
+#        *(1\
+#        -0*(0.5/d(a2,sigma2,x)+1)**(1-bbar(ss,a2,sigma2,x)))\
+#        )
+#
+
+
 plt.plot(x,x)
 #plt.ylim([-0.0,0.2])
 
