@@ -27,25 +27,32 @@ plt.plot(x,C*d(a2,sigma2,x)**bbar(ss,a2,sigma2,x)\
         *(d(a2,sigma2,x)**(1-bbar(ss,a2,sigma2,x)) \
         -(0.5+d(a2,sigma2,x))**(1-bbar(ss,a2,sigma2,x))) \
         )
-    
-plt.plot(x,-C*d(a2,sigma2,x)**bbar(ss,a2, sigma2, x)\
+
+
+plt.plot(x,1\
         /(bbar(ss,a2, sigma2, x) -1) \
-        *(1/2))
+        *(1 \
+        -(1+0.5/d(a2,sigma2,x))**(1-bbar(ss,a2,sigma2,x))) \
+        )
 
-
-plt.plot(x,C*d(a2,sigma2,x)**bbar(ss,a2, sigma2, x)\
-        *(1/2))
-
-#plt.plot(x,C*d(a2,sigma2,x)\
-#        /(bbar(ss,a2, sigma2, x) -1)-x \
-#        *(1\
-#        -0*(0.5/d(a2,sigma2,x)+1)**(1-bbar(ss,a2,sigma2,x)))\
-#        )
+#plt.plot(x,1\
+#        /(bbar(ss,a2, sigma2, x) -1) \
+#        *(d(a2,sigma2,x)**(1-bbar(ss,a2,sigma2,x)) \
+#        -(0.5+d(a2,sigma2,x))**(1-bbar(ss,a2,sigma2,x))) \
+#        ,'k')
+#    
+#plt.plot(x,-C*d(a2,sigma2,x)**bbar(ss,a2, sigma2, x)\
+#        /(bbar(ss,a2, sigma2, x) -1) \
+#        *(1/2))
+#
+#
+#plt.plot(x,C*d(a2,sigma2,x)**bbar(ss,a2, sigma2, x)\
+#        *(1/2))
 #
 
 
 plt.plot(x,x)
-#plt.ylim([-0.0,0.2])
+plt.ylim([-0.0,5.0])
 
 #plt.savefig('/home/jason/git/fluctuating_optimum/temp.pdf')
 

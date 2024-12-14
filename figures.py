@@ -14,6 +14,9 @@ import ast
 #Theory functions
 #======================                  
 
+def Vg_LB(mu,L,Vs):
+    return 4*mu*L*Vs
+
 def phi_not_normed(x,N,mu,sigma_c2,s):
     
     if sigma_c2==0:
@@ -239,9 +242,6 @@ fig.colorbar(pos)
 #%%
 #Stablizing picture
 
-def Vg(mu,L,Vs):
-    return 4*mu*L*Vs
-
 x=np.linspace(-2,2.1,1000)
 
 fig,ax=plt.subplots(figsize=[4,2.7])
@@ -256,22 +256,22 @@ ax.set_yticklabels([])
 ax.set_ylabel(r'Distribution',fontsize=14)
 
 xpos=0.4
-plt.annotate(s='', xy=(-xpos,np.exp(-10*xpos**2)), xytext=(xpos,np.exp(-10*xpos**2)), arrowprops=dict(arrowstyle='<->'))
-plt.annotate(s=r'$V_g+V_e$',xy=(-0.435,np.exp(-0.15*xpos**2)-0.15),xytext=(-0.435,np.exp(-10*xpos**2)-0.15),fontsize=14)
+plt.annotate(text='', xy=(-xpos,np.exp(-10*xpos**2)), xytext=(xpos,np.exp(-10*xpos**2)), arrowprops=dict(arrowstyle='<->'))
+plt.annotate(text=r'$V_g+V_e$',xy=(-0.435,np.exp(-0.15*xpos**2)-0.15),xytext=(-0.435,np.exp(-10*xpos**2)-0.15),fontsize=14)
 
 
 xpos=0.6
-plt.annotate(s='', xy=(-xpos,np.exp(-xpos**2)), xytext=(xpos,np.exp(-xpos**2)), arrowprops=dict(arrowstyle='<->'))
-plt.annotate(s=r'$V_s$',xy=(-0.15,np.exp(-xpos**2)-0.15),xytext=(-0.15,np.exp(-xpos**2)-0.15),fontsize=14)
+plt.annotate(text='', xy=(-xpos,np.exp(-xpos**2)), xytext=(xpos,np.exp(-xpos**2)), arrowprops=dict(arrowstyle='<->'))
+plt.annotate(text=r'$V_s$',xy=(-0.15,np.exp(-xpos**2)-0.15),xytext=(-0.15,np.exp(-xpos**2)-0.15),fontsize=14)
 
 
-plt.annotate(s=r'Trait optimum',xy=(0,1),xytext=(0,1.1),fontsize=12,arrowprops=dict(arrowstyle='->'))
+plt.annotate(text=r'Trait optimum',xy=(0,1),xytext=(0,1.1),fontsize=12,arrowprops=dict(arrowstyle='->'))
 
 plt.tight_layout()
 
 plt.legend(loc='upper left',frameon=False)
 
-plt.savefig("stablizing.eps")
+#plt.savefig("stablizing.eps")
 
 #%%
 #Latter-Bulmer predictions
@@ -279,8 +279,8 @@ plt.savefig("stablizing.eps")
 mu=6.6e-9
 
 Ls=np.linspace(1.2e4,1.2e8,10000)
-plt.plot(np.log10(Ls),Vg(mu,Ls,20)/(1+Vg(mu,Ls,20)),label=r'$V_s=20V_e$')
-plt.plot(np.log10(Ls),Vg(mu,Ls,5)/(1+Vg(mu,Ls,5)),label=r'$V_s=5V_e$')
+plt.plot(np.log10(Ls),Vg_LB(mu,Ls,20)/(1+Vg_LB(mu,Ls,20)),label=r'$V_s=20V_e$')
+plt.plot(np.log10(Ls),Vg_LB(mu,Ls,5)/(1+Vg_LB(mu,Ls,5)),label=r'$V_s=5V_e$')
 
 plt.fill_between(np.log10(Ls),[0.1],[0.6],alpha=0.5)
 
@@ -295,15 +295,15 @@ plt.legend(fontsize=14)
 
 plt.ylim([0,1])
 plt.tight_layout()
-plt.savefig("LB.pdf")
+#plt.savefig("LB.pdf")
 
 #%%
 #Finite N Latter-Bulmer predictions
 mu=6.6e-9
 
 Ls=np.linspace(1.2e4,1.2e8,10000)
-plt.plot(np.log10(Ls),Vg(mu,Ls,20)/(1+Vg(mu,Ls,20)),label=r'$V_s=20V_e, N\rightarrow\infty$')
-plt.plot(np.log10(Ls),Vg(mu,Ls,5)/(1+Vg(mu,Ls,5)),label=r'$V_s=5V_e, N\rightarrow\infty$')
+plt.plot(np.log10(Ls),Vg_LB(mu,Ls,20)/(1+Vg_LB(mu,Ls,20)),label=r'$V_s=20V_e, N\rightarrow\infty$')
+plt.plot(np.log10(Ls),Vg_LB(mu,Ls,5)/(1+Vg_LB(mu,Ls,5)),label=r'$V_s=5V_e, N\rightarrow\infty$')
 
 plt.fill_between(np.log10(Ls),[0.1],[0.6],alpha=0.5)
 
@@ -370,7 +370,7 @@ plt.legend(loc='upper left',frameon=False)
 plt.savefig("stablizing_fluc.eps")
 
 #%%
-#Chasing optimim picture
+#Chasing optimum picture
 
 x=np.linspace(-2,2.1,1000)
 
@@ -400,7 +400,6 @@ plt.savefig("stablizing_lande.eps")
 
 
 #%%
-#Latter-Bulmer_fluctuation predictions 
 
 sigma2=1e-2
 theta=0e-2
@@ -421,40 +420,28 @@ ax.set_xlabel('Time')
 plt.plot(opts)
 plt.tight_layout()
 
-plt.savefig("random_walk.pdf")
+%plt.savefig("random_walk.pdf")
 
 #%%
+#Latter-Bulmer_fluctuation predictions 
+
 mu=6.6e-9
+sigma2=1e-2
 
-Ls=np.linspace(1.2e4,1.2e8,10000)
-plt.plot(np.log10(Ls),Vg(mu,Ls,20)/(1+Vg(mu,Ls,20)),label=r'$V_s=20V_e, \sigma^2=0$')
-plt.plot(np.log10(Ls),Vg(mu,Ls,5)/(1+Vg(mu,Ls,5)),label=r'$V_s=5V_e, \sigma^2=0$ ')
+Ls=np.exp(np.linspace(np.log(1.2e4),np.log(1.2e8),50))
+plt.plot(np.log10(Ls),Vg_LB(mu,Ls,20)/(1+Vg_LB(mu,Ls,20)),label=r'$V_s=20V_e, \sigma^2=0$')
+plt.plot(np.log10(Ls),Vg_LB(mu,Ls,5)/(1+Vg_LB(mu,Ls,5)),label=r'$V_s=5V_e, \sigma^2=0$ ')
 
 
-Ls=np.array([10,25,50,75,1e2,2.5e2,5e2,7.5e2,1e3,2.5e3,5e3,7.5e3,1e4,5e4,1e5])
+#rescale for computational stability
+Ls=1e-3*Ls
 mu=mu*1e3
-
-# h2_theory=[]
-# for _ in Ls:
-#     temp=Vg_pred_consistent(1e-1,1000,mu,0.3,_,0,20)
-#     h2_theory.append(temp/(1+temp))
-
-# plt.plot(np.log10(Ls)+3,h2_theory,label=r'$V_s=20V_e, N=1000$')
-
-
-# h2_theory=[]
-# for _ in Ls:
-#     temp=Vg_pred_consistent(1e-1,1000,mu,0.3,_,0,5)
-#     h2_theory.append(temp/(1+temp))
-
-# plt.plot(np.log10(Ls)+3,h2_theory,label=r'$V_s=5V_e, N=1000$')
 
 plt.gca().set_prop_cycle(None)
 
 h2_theory=[]
 for _ in Ls:
-
-    temp=Vg_pred_consistent(1e-1,10000,mu,0.3,_,1e-3,20)
+    temp=Vg_pred_consistent(1e-1,10000,mu,0.3,_,sigma2,20)
     h2_theory.append(temp/(1+temp))
 
 plt.plot(np.log10(Ls)+3,h2_theory,'--',label=r'$V_s=20V_e, \sigma^2=10^{-2}V_e$')
@@ -462,12 +449,10 @@ plt.plot(np.log10(Ls)+3,h2_theory,'--',label=r'$V_s=20V_e, \sigma^2=10^{-2}V_e$'
 
 h2_theory=[]
 for _ in Ls:
-
-    temp=Vg_pred_consistent(1e-1,10000,mu,0.3,_,1e-3,5)
+    temp=Vg_pred_consistent(1e-1,10000,mu,0.3,_,sigma2,5)
     h2_theory.append(temp/(1+temp))
 
 plt.plot(np.log10(Ls)+3,h2_theory,'--',label=r'$V_s=5V_e, \sigma^2=10^{-2}V_e$')
-
 
 plt.fill_between(np.log10(Ls)+3,[0.1],[0.6],alpha=0.5)
 
@@ -480,5 +465,9 @@ plt.yticks(fontsize=14)
 plt.ylim([0,1])
 plt.tight_layout()
 plt.legend(fontsize=12)
+
+plt.figure()
+plt.plot(h2_theory/(Vg_LB(mu,Ls,5)/(1+Vg_LB(mu,Ls,5))))
+
 
 #plt.savefig("LB_fluc.pdf")
