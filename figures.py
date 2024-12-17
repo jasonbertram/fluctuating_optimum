@@ -18,13 +18,11 @@ def Vg_LB(mu,L,Vs):
     return 4*mu*L*Vs
 
 def phi_not_normed(x,N,mu,sigma_c2,s):
-    
     if sigma_c2==0:
         return np.exp(-2*N*s*x*(1-x))*(x*(1-x))**(2*N*mu-1)
     else:
         return ((1+N*sigma_c2*x*(1-x))**(-2*s/sigma_c2-2*N*mu)
                 /(x*(1-x))**(1-2*N*mu))
-    
 
 def phi_norm_const(N,mu,sigma_c2,s):
     return (0.5/(integrate.quad(lambda x: 
@@ -39,17 +37,15 @@ def E_H(N,mu,sigma_c2,s):
             *phi_not_normed(x,N,mu,sigma_c2,s),1/N,0.5)[0])
             *phi_norm_const(N,mu,sigma_c2,s))
 
-
-def Vg_pred(Vg,N,mu,a,L,sigma_e2,V_s):
+def Vg_pred(Vg,N,mu,a,L,sigma2,V_s):
     s=a**2/(2*V_s)
-    sigma_c2=a**2*sigma_e2/(Vg)**2
+    sigma_c2=a**2*sigma2/(Vg)**2
     return 2*a**2*L*E_H(N,mu,sigma_c2,s)
 
 def Vg_pred_consistent(init,N,mu,a,L,sigma_e2,V_s):
     res = (scipy.optimize.minimize(lambda x: 
             (Vg_pred(x,N,mu,a,L,sigma_e2,V_s)-x)**2, init))
     return res.x[0]
-
 
 def Vg_theory_opt(x,N,a,sigma_e2,L,mu,Vs):
     if sigma_e2==0:
@@ -59,7 +55,6 @@ def Vg_theory_opt(x,N,a,sigma_e2,L,mu,Vs):
         d=np.abs(0.5*(1-np.sqrt(1+4/(N*sc2))))
         b=x**2/(Vs*sigma_e2)-2*N*mu
         b_t=b/(d+1)
-    
         return ((2*N*mu)*(2*L*a**2)*d**b_t*(d**(1-b_t)
                 -(0.5+d)**(1-b_t))/(b_t-1)-x)
 
@@ -428,9 +423,9 @@ plt.tight_layout()
 mu=6.6e-9
 sigma2=1e-2
 
-Ls=np.exp(np.linspace(np.log(1.2e4),np.log(1.2e8),50))
-plt.plot(np.log10(Ls),Vg_LB(mu,Ls,20)/(1+Vg_LB(mu,Ls,20)),label=r'$V_s=20V_e, \sigma^2=0$')
-plt.plot(np.log10(Ls),Vg_LB(mu,Ls,5)/(1+Vg_LB(mu,Ls,5)),label=r'$V_s=5V_e, \sigma^2=0$ ')
+Ls=np.exp(np.linspace(np.log(1.2e4),np.log(1.2e8),20))
+plt.plot(np.log10(Ls),Vg_LB(mu,Ls,20)/(1+Vg_LB(mu,Ls,20)),label=r'$V_s=20, \sigma^2=0$')
+plt.plot(np.log10(Ls),Vg_LB(mu,Ls,5)/(1+Vg_LB(mu,Ls,5)),label=r'$V_s=5, \sigma^2=0$ ')
 
 
 #rescale for computational stability
@@ -441,18 +436,18 @@ plt.gca().set_prop_cycle(None)
 
 h2_theory=[]
 for _ in Ls:
-    temp=Vg_pred_consistent(1e-1,10000,mu,0.3,_,sigma2,20)
+    temp=Vg_pred_consistent(1e-2,10000,mu,0.3,_,sigma2,20)
+    print(temp)
     h2_theory.append(temp/(1+temp))
 
-plt.plot(np.log10(Ls)+3,h2_theory,'--',label=r'$V_s=20V_e, \sigma^2=10^{-2}V_e$')
-
+plt.plot(np.log10(Ls)+3,h2_theory,'--',label=r'$V_s=20, \sigma^2=10^{-2}$')
 
 h2_theory=[]
 for _ in Ls:
-    temp=Vg_pred_consistent(1e-1,10000,mu,0.3,_,sigma2,5)
+    temp=Vg_pred_consistent(1e-2,10000,mu,0.3,_,sigma2,5)
     h2_theory.append(temp/(1+temp))
 
-plt.plot(np.log10(Ls)+3,h2_theory,'--',label=r'$V_s=5V_e, \sigma^2=10^{-2}V_e$')
+plt.plot(np.log10(Ls)+3,h2_theory,'--',label=r'$V_s=5, \sigma^2=10^{-2}$')
 
 plt.fill_between(np.log10(Ls)+3,[0.1],[0.6],alpha=0.5)
 
@@ -466,8 +461,8 @@ plt.ylim([0,1])
 plt.tight_layout()
 plt.legend(fontsize=12)
 
-plt.figure()
-plt.plot(h2_theory/(Vg_LB(mu,Ls,5)/(1+Vg_LB(mu,Ls,5))))
+#plt.figure()
+#plt.plot(h2_theory/(Vg_LB(mu,Ls,5)/(1+Vg_LB(mu,Ls,5))))
 
 
 #plt.savefig("LB_fluc.pdf")
