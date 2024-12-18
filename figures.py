@@ -436,15 +436,14 @@ plt.gca().set_prop_cycle(None)
 
 h2_theory=[]
 for _ in Ls:
-    temp=Vg_pred_consistent(1e-2,10000,mu,0.3,_,sigma2,20)
-    print(temp)
+    temp=Vg_pred_consistent(1e-1,10000,mu,0.3,_,sigma2,20)
     h2_theory.append(temp/(1+temp))
 
 plt.plot(np.log10(Ls)+3,h2_theory,'--',label=r'$V_s=20, \sigma^2=10^{-2}$')
 
 h2_theory=[]
 for _ in Ls:
-    temp=Vg_pred_consistent(1e-2,10000,mu,0.3,_,sigma2,5)
+    temp=Vg_pred_consistent(1e-1,10000,mu,0.3,_,sigma2,5)
     h2_theory.append(temp/(1+temp))
 
 plt.plot(np.log10(Ls)+3,h2_theory,'--',label=r'$V_s=5, \sigma^2=10^{-2}$')
