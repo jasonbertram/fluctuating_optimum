@@ -64,24 +64,27 @@ def Vg_theory_opt(x,N,a,sigma_e2,L,mu,Vs):
 
 fname="Vg_sims_th0"
 with open(fname,'r') as fin:
-    params=ast.literal_eval(fin.readline()[2:-1])
+    params=eval(fin.readline()[2:-1])
+    #parameter format: L,sigma_e2,N,V_s,mu,a2,theta,rep
 
 Vg_sims=np.loadtxt(fname)
 
-
 #%%
 ########################################
-#small offset to avoid log(0)
-offset=1e-7
+#Exploratory plots
 
-#parameter format: L,sigma_e2,N,V_s,mu,a2,theta,rep
+#small offset to avoid log(0)
+offset=1e-5
+
 #index of variable on x axis
 xvar=1
 
 #log x axis option
 logx=True
 
-for i in range(len(params)):
+indices=[_ for _ in range(len(params)) if params[_][-3]==0.1]
+
+for i in indices:
 
     plt.figure(str([_ for ind,_ in enumerate(params[i]) if ind != xvar]))
     ax=plt.gca() 
@@ -89,10 +92,15 @@ for i in range(len(params)):
     L,sigma_e2,N,V_s,mu,a2,theta,rep=params[i]
     a=np.sqrt(a2)
     
-    Vg_theory=scipy.optimize.fsolve(
-            lambda x: Vg_theory_opt(x,N,a,sigma_e2,L,mu,V_s),0.025)[0]
+    #Vg_theory=scipy.optimize.fsolve(
+    #        lambda x: Vg_theory_opt(x,N,a,sigma_e2,L,mu,V_s),0.025)[0]
     
     Vg_numerical=Vg_pred_consistent(2e-1,N,mu,a,L,sigma_e2,V_s)
+    
+    h2_LB=Vg_LB(mu,L,V_s)/(1+Vg_LB(mu,L,V_s))
+    ax.axhline(y=h2_LB,color='k',ls='--')
+    ax.axhspan(0.1,0.6,color='k',alpha=0.02)
+
     #Simulated heritability violinplots
     #Environmental variance = 1
     if logx==True:  
@@ -101,17 +109,18 @@ for i in range(len(params)):
                 positions=[np.log10(params[i][xvar]+offset)],
                 widths=2e-1,showmeans=True)
         
-        ax.plot(
-                np.log10(params[i][xvar]+offset),
-                Vg_theory/(Vg_theory+1),
-                'ko',fillstyle='none',markersize=8,
-                label=r'Theory analytical',alpha=0.7)
+        #ax.plot(
+        #        np.log10(params[i][xvar]+offset),
+        #        Vg_theory/(Vg_theory+1),
+        #        'ko',fillstyle='none',markersize=8,
+        #        label=r'Theory analytical',alpha=0.7)
         
         ax.plot(
                 np.log10(params[i][xvar]+offset),
                 Vg_numerical/(Vg_numerical+1),
                 'kx',markersize=10,
-                label=r'Theory numerical',alpha=0.7)
+                label=r'Diffusion approximation MSB',alpha=0.7)
+        
     else:
         ax.violinplot(
                 Vg_sims[i]/(Vg_sims[i]+1),
@@ -128,7 +137,7 @@ for i in range(len(params)):
                 'kx',markersize=10,
                 label=r'Theory numerical',alpha=0.7)
        
-    ax.set_ylim([0,.5])
+    ax.set_ylim([0,0.8])
 
 for _ in plt.get_figlabels():
     plt.figure(_)
@@ -136,104 +145,75 @@ for _ in plt.get_figlabels():
 
 plt.close('all')
 
+
+
 #%%
 #multipanel sigma2 dependency
-offset=1e-7
+offset=1e-5
 
-
-fig, axs=plt.subplots(3,2,figsize=[7,7])
+N=1000
+fig, axs=plt.subplots(2,2,figsize=[7,7])
 axs=axs.flat
 
+unique_params=set([_[:1]+_[2:6] for _ in params if _[-3]==0.1 and _[2]==N])
+indices=[_ for _ in range(len(params)) if params[_][-3]==0.1 and params[_][2]==N]
 fig_dict=dict(zip(unique_params,axs))
 
-
-for i in range(len(params)):
+for i in indices:
 
     L,sigma_e2,N,V_s,mu,a2,theta,rep=params[i]
 
-    #a=np.sqrt(Vm/(2*L*mu))
     a=np.sqrt(a2)
 
-    ax=fig_dict[str([L,N,V_s,mu,a2])]
+    ax=fig_dict[(L,N,V_s,mu,a2)]
     
-    #Environmental variance set to 1
-    ax.violinplot(Vg_sims[i]/(Vg_sims[i]+1),positions=[np.log10(sigma_e2+offset)],widths=0.75,showmeans=True)
-    
-    
-    #h_2=Vg_mean/(Vg_mean+1)
-    #plt.plot(sigma_e2s,h_2,label=str(N)+','+str(V_s)+','+str(mu))
-    
-    #Vg_theory=0.5*2*L*mu*V_s*(1+np.sqrt(1+sigma_e2s/(V_s*L**2*mu**2)))
-    
-    Vg_theory=scipy.optimize.fsolve(lambda x: Vg_theory_opt(x,N,a,sigma_e2,L,mu,V_s),0.025)[0]
-    
-    ax.plot(np.log10(sigma_e2+offset), Vg_theory/(Vg_theory+1),'ko',fillstyle='none',markersize=8,label=r'Theory analytical',alpha=0.7)
-    
+    ax.violinplot(
+            Vg_sims[i]/(Vg_sims[i]+1),
+            positions=[np.log10(sigma_e2+offset)],
+            widths=0.25,showmeans=True)
     
     Vg_numerical=Vg_pred_consistent(2e-1,N,mu,a,L,sigma_e2,V_s)
-    ax.plot(np.log10(sigma_e2+offset), Vg_numerical/(Vg_numerical+1),'kx',markersize=10,label=r'Theory numerical',alpha=0.7)
     
-    
-    
-    ax.set_ylim([0,.5])
-    ax.set_title(r'$L=$'+str(L)+r'$,N=$'+str(N)+r'$,\mu=$'+str(mu),y=.83,fontsize=11)
+    ax.plot(
+            np.log10(params[i][xvar]+offset),
+            Vg_numerical/(Vg_numerical+1),
+            'kx',markersize=10,
+            label=r'Diffusion approx. MSB',alpha=0.7)
+        
+    ax.set_ylim([0,.8])
+    ax.set_title(r'$L=$'+str(L)+r'$,V_s=$'+str(V_s),y=.99,fontsize=11)
                     
-
+    h2_LB=Vg_LB(mu,L,V_s)/(1+Vg_LB(mu,L,V_s))
+    ax.axhline(y=h2_LB,color='k',ls='--',label='Latter-Bulmer')
+    ax.axhspan(0.1,0.6,color='k',alpha=0.02)
 
 axs[2].set_ylabel(r'Heritability $h^2$',fontsize=14)
+axs[2].yaxis.set_label_coords(-0.2,1.1)
 
+tick_list=[r'$0.0$','',r'$0.2$','',r'$0.4$','',r'$0.6$','',r'$0.8$']
+axs[0].set_yticklabels(tick_list,fontsize=12)
+axs[2].set_yticklabels(tick_list,fontsize=12)
 axs[1].set_yticklabels([])
 axs[3].set_yticklabels([])
-axs[5].set_yticklabels([])
 
-axs[0].set_yticklabels([r'$0.0$',r'$0.1$',r'$0.2$',r'$0.3$',r'$0.4$',r'$0.5$'],fontsize=12)
-axs[2].set_yticklabels([r'$0.0$',r'$0.1$',r'$0.2$',r'$0.3$',r'$0.4$',r'$0.5$'],fontsize=12)
-axs[4].set_yticklabels([r'$0.0$',r'$0.1$',r'$0.2$',r'$0.3$',r'$0.4$',r'$0.5$'],fontsize=12)
-
-for _ in axs:
-    _.set_xticks([np.log10(x+offset) for x in [0,1e-6,1e-5,1e-4,1e-3,1e-2]])
-
+tick_list=['',r'$0$',r'$10^{-4}$',r'$10^{-3}$',r'$10^{-2}$']
+axs[2].set_xticklabels(tick_list,fontsize=12)
+axs[3].set_xticklabels(tick_list,fontsize=12)
 axs[0].set_xticklabels([])
 axs[1].set_xticklabels([])
-axs[2].set_xticklabels([])
-axs[3].set_xticklabels([])
 
-axs[4].set_xticklabels([r'$0$',r'$10^{-6}$',r'$10^{-5}$',r'$10^{-4}$',r'$10^{-3}$',r'$10^{-2}$'],fontsize=12)
-axs[5].set_xticklabels([r'$0$',r'$10^{-6}$',r'$10^{-5}$',r'$10^{-4}$',r'$10^{-3}$',r'$10^{-2}$'],fontsize=12)
-
-axs[4].set_xlabel(r'Fluctuation intensity $\sigma^2$',x=1.2,fontsize=14)
+axs[2].set_xlabel(r'Fluctuation intensity $\sigma^2$',x=1.15,fontsize=14)
 
 #remove duplicate legend entries
 handles, labels = axs[0].get_legend_handles_labels()
 by_label = dict(zip(labels, handles))
-axs[0].legend(by_label.values(), by_label.keys(),loc=[0.3,.55],fontsize=10)
+axs[0].legend(by_label.values(), by_label.keys(),loc=[0.1,.8],fontsize=10)
 
-plt.savefig('violinplot.pdf')
+plt.savefig('violinplot_N'+str(N)+'.pdf',bbox_inches='tight')
 
 #ax.set_xlabel(r'Fluctuation intensity $\sigma^2$',fontsize=14)
 
-#%%
-
-fig, ax1=plt.subplots()
-
-def heritability(V_s,sigma_e2s,Lmu):
-    Vg=0.5*4*Lmu*V_s*(1+np.sqrt(1+sigma_e2s/(4*V_s*Lmu**2)))
-    return Vg/(1+Vg)
-
-xs=np.linspace(1,20)
-ys=np.linspace(1e-4,1e-2)
-
-h2_array=np.array([[heritability(x,y,5e-2) for x in xs] for y in ys])
-pos=plt.contourf(xs,ys,h2_array,levels=np.arange(0,np.max(h2_array)+0.05,0.05))
-fig.colorbar(pos)
-
-fig, ax1=plt.subplots()
-xs=10**(np.linspace(-4,-1))
-
-h2_array=np.array([[heritability(10,y,x) for x in xs] for y in ys])
-pos=plt.contourf(np.linspace(-4,-1),np.log10(ys),h2_array,levels=np.arange(0,np.max(h2_array)+0.05,0.05))
-fig.colorbar(pos)
-
+###################
 #%%
 #Stablizing picture
 
