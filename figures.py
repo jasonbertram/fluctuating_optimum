@@ -42,9 +42,9 @@ def Vg_pred(Vg,N,mu,a,L,sigma2,V_s):
     sigma_c2=a**2*sigma2/(Vg)**2
     return 2*a**2*L*E_H(N,mu,sigma_c2,s)
 
-def Vg_pred_consistent(init,N,mu,a,L,sigma_e2,V_s):
+def Vg_pred_consistent(init,N,mu,a,L,sigma2,V_s):
     res = (scipy.optimize.minimize(lambda x: 
-            (Vg_pred(x,N,mu,a,L,sigma_e2,V_s)-x)**2, init))
+            (Vg_pred(x,N,mu,a,L,sigma2,V_s)-x)**2, init))
     return res.x[0]
 
 def Vg_theory_opt(x,N,a,sigma_e2,L,mu,Vs):
@@ -151,7 +151,10 @@ plt.close('all')
 #multipanel sigma2 dependency
 offset=1e-5
 
-N=1000
+#index of variable on x axis
+xvar=1
+
+N=10000
 fig, axs=plt.subplots(2,2,figsize=[7,7])
 axs=axs.flat
 
@@ -172,7 +175,7 @@ for i in indices:
             positions=[np.log10(sigma_e2+offset)],
             widths=0.25,showmeans=True)
     
-    Vg_numerical=Vg_pred_consistent(2e-1,N,mu,a,L,sigma_e2,V_s)
+    Vg_numerical=Vg_pred_consistent(5e-1,N,mu,a,L,sigma_e2,V_s)
     
     ax.plot(
             np.log10(params[i][xvar]+offset),

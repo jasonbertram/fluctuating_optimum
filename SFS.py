@@ -4,10 +4,6 @@ Created on Mon Jan 10 10:07:53 2022
 
 @author: jason
 """
-
-
-#
-
 import numpy as np
 import matplotlib.pyplot as plt
 import itertools
@@ -27,38 +23,30 @@ def p_prime_sel_opt(p,delt_opt,a,sign,V_s):
     p=pmap(rhomap(p)*np.exp(S*a*sign*(delt_opt+0.5*a*sign*(2*p-1))))    
     return p
 
-
-
-
-
 #%%%
 #Single core simulation
 
 Vg_sims={}
 
+L=1000
+rep=5
 
-L=100
-rep=100
-
-sigma_e2s=np.array([0,1e-3,1e-2])
-#sigma_e2s=np.array([0])
+#sigma_e2s=np.array([0,1e-3,1e-2])
+sigma_e2s=np.array([1e-2])
 
 Ns=np.array([10000])
 Vs=np.array([5])
-mus=np.array([5e-6])
-a=0.1
-#Mutational heritability = 2 L mu alpha**2 (2 comes from diploidy)  
-Vm=1e-4
+mus=np.array([6.6e-6])
+a=np.sqrt(0.1)
 
-#phist={str(_):np.zeros([maxiter,L,rep]) for _ in sigma_e2s}
+maxiter=int(10*Ns[0])
+phist={str(_):np.zeros([maxiter,L,rep]) for _ in sigma_e2s}
 
 for sigma_e2,N,V_s,mu in itertools.product(sigma_e2s,Ns,Vs,mus):
     #print(sigma_e2,N,V_s,mu,alpha**2/(2*V_s))
     sign=2*np.random.randint(0,2,[L,rep])-1
     
     opt=np.zeros(rep)
-    
-    maxiter=int(10*N)
     
     p=np.zeros([L,rep]) 
     
@@ -68,7 +56,7 @@ for sigma_e2,N,V_s,mu in itertools.product(sigma_e2s,Ns,Vs,mus):
     
     for t in tqdm(range(maxiter)):
         
-        #phist[str(sigma_e2)][t]=np.array(p)
+        phist[str(sigma_e2)][t]=np.array(p)
         
         fixed_loci_1=(p==1)
         
@@ -86,7 +74,6 @@ for sigma_e2,N,V_s,mu in itertools.product(sigma_e2s,Ns,Vs,mus):
         opt_hist[t]=opt
         numfix_hist[t]=np.sum(fixed_loci_1,0)
         
-        
         np.place(p,mutation_mask,1/N)
         np.place(sign,mutation_mask,2*np.random.randint(0,2,np.sum(mutation_mask))-1)
         
@@ -98,15 +85,12 @@ for sigma_e2,N,V_s,mu in itertools.product(sigma_e2s,Ns,Vs,mus):
             (np.random.rand(np.sum(poly_loci))<N*mu*(1-p[poly_loci]))/N-\
                 (np.random.rand(np.sum(poly_loci))<N*mu*p[poly_loci])/N
         
-        
         p=np.random.binomial(N,p_prime_sel_opt(p,opt-zbar,a,sign,V_s))/N
         
         opt=np.random.normal(opt,np.sqrt(sigma_e2),rep)
     
-    Vg_sims[str([sigma_e2,NN,V_s,mu])]=2*a**2*np.sum(p*(1-p),0)
+    Vg_sims[str([sigma_e2,N,V_s,mu])]=2*a**2*np.sum(p*(1-p),0)
 
-            
-            
 #%%
 #Genetic variance versus sigma_e2
 
@@ -148,26 +132,28 @@ for N in Ns:
 
 fig, axs=plt.subplots(1,2,figsize=[5,2.5])
 
-axs[0].plot(phist[str(0.0)][-11000:-10000,:,0],linewidth=0.5)
-axs[0].set_ylim([0,1])
-axs[0].set_ylabel(r'Frequency',fontsize=14)
-axs[0].set_title(r'Stationary')
-axs[0].set_xticklabels([])
-axs[0].set_xlim([0,1000])
+#axs[0].plot(phist[str(0.0)][-11000:-10000,:,0],linewidth=0.5)
+#axs[0].set_ylim([0,1])
+#axs[0].set_ylabel(r'Frequency',fontsize=14)
+#axs[0].set_title(r'Stationary')
+#axs[0].set_xticklabels([])
+#axs[0].set_xlim([0,1000])
 
-axs[1].plot(phist[str(1e-2)][-11000:-10000,:,0],linewidth=0.5)
-axs[1].set_xlim([0,1000])
+#axs[1].plot(phist[str(1e-2)][-11000:-10000,:,0],linewidth=0.5)
+axs[1].plot(phist[str(1e-2)][:,:,1],linewidth=0.5)
+#axs[1].set_xlim([0,1000])
 axs[1].set_ylim([0,1])
 axs[1].set_yticklabels([])
 axs[1].set_title(r'Fluctuating')
-axs[1].set_xticklabels([])
+#axs[1].set_xticklabels([])
 
-plt.annotate(s=r'Time',xy=(0.52,0.04), xytext=(0.52,0.04),xycoords='figure fraction',fontsize=14)
+#plt.annotate(s=r'Time',xy=(0.52,0.04), xytext=(0.52,0.04),xycoords='figure fraction',fontsize=14)
 
 plt.tight_layout()
-plt.savefig("stat_vs_fluc.pdf")
+plt.show()
+#plt.savefig("stat_vs_fluc.pdf")
 
-#%%%
+#%%
 #SFS
 #
 

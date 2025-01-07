@@ -10,6 +10,7 @@ import itertools
 import time
 from mpi4py import MPI
 
+#%%
 #Simulation functions
 #======================
 def pmap(rho):
@@ -66,6 +67,9 @@ def simulate(param):
         opt=(1-theta)*opt + np.random.normal(0,np.sqrt(sigma_e2),rep)
 
     return 2*a**2*np.sum(p*(1-p),0)
+
+
+#%%
 
 ####################################
 #Parallel handling of replicates with MPI.
