@@ -148,6 +148,7 @@ plt.close('all')
 
 
 #%%
+#===================================================
 #multipanel sigma2 dependency
 offset=1e-5
 
@@ -174,6 +175,13 @@ for i in indices:
             Vg_sims[i]/(Vg_sims[i]+1),
             positions=[np.log10(sigma_e2+offset)],
             widths=0.25,showmeans=True)
+   
+    scaleVg=Vg_LB(mu,L,V_s)+np.sqrt(V_s*sigma_e2)
+    ax.plot(
+            np.log10(params[i][xvar]+offset),
+            scaleVg/(scaleVg+1),
+            'ko',markersize=10,
+            label=r'Diffusion approx. MSB',alpha=0.7)
     
     Vg_numerical=Vg_pred_consistent(5e-1,N,mu,a,L,sigma_e2,V_s)
     
@@ -212,7 +220,7 @@ handles, labels = axs[0].get_legend_handles_labels()
 by_label = dict(zip(labels, handles))
 axs[0].legend(by_label.values(), by_label.keys(),loc=[0.1,.8],fontsize=10)
 
-plt.savefig('violinplot_N'+str(N)+'.pdf',bbox_inches='tight')
+#plt.savefig('violinplot_N'+str(N)+'.pdf',bbox_inches='tight')
 
 #ax.set_xlabel(r'Fluctuation intensity $\sigma^2$',fontsize=14)
 
