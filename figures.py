@@ -159,8 +159,8 @@ N=10000
 fig, axs=plt.subplots(2,2,figsize=[7,7])
 axs=axs.flat
 
-unique_params=set([_[:1]+_[2:6] for _ in params if _[-3]==0.1 and _[2]==N])
-indices=[_ for _ in range(len(params)) if params[_][-3]==0.1 and params[_][2]==N]
+unique_params=set([_[:1]+_[2:6] for _ in params if _[-3]==0.01 and _[2]==N])
+indices=[_ for _ in range(len(params)) if params[_][-3]==0.01 and params[_][2]==N]
 fig_dict=dict(zip(unique_params,axs))
 
 for i in indices:
@@ -180,8 +180,8 @@ for i in indices:
     ax.plot(
             np.log10(params[i][xvar]+offset),
             scaleVg/(scaleVg+1),
-            'ko',markersize=10,
-            label=r'Diffusion approx. MSB',alpha=0.7)
+            'ko',markersize=5,
+            label=r'$4L\mu V_s+\sqrt{V_s\sigma^2}$',alpha=0.7)
     
     Vg_numerical=Vg_pred_consistent(5e-1,N,mu,a,L,sigma_e2,V_s)
     
@@ -189,25 +189,26 @@ for i in indices:
             np.log10(params[i][xvar]+offset),
             Vg_numerical/(Vg_numerical+1),
             'kx',markersize=10,
-            label=r'Diffusion approx. MSB',alpha=0.7)
+            label=r'Diffusion approx. (numerical)',alpha=0.7)
         
     ax.set_ylim([0,.8])
     ax.set_title(r'$L=$'+str(L)+r'$,V_s=$'+str(V_s),y=.99,fontsize=11)
                     
     h2_LB=Vg_LB(mu,L,V_s)/(1+Vg_LB(mu,L,V_s))
-    ax.axhline(y=h2_LB,color='k',ls='--',label='Latter-Bulmer')
+    ax.axhline(y=h2_LB,color='k',ls='--',label=r'Latter-Bulmer $(4L\mu V_s)$')
     ax.axhspan(0.1,0.6,color='k',alpha=0.02)
 
 axs[2].set_ylabel(r'Heritability $h^2$',fontsize=14)
 axs[2].yaxis.set_label_coords(-0.2,1.1)
 
-tick_list=[r'$0.0$','',r'$0.2$','',r'$0.4$','',r'$0.6$','',r'$0.8$']
+tick_list=[r'$0.0$',' ',r'$0.2$',' ',r'$0.4$',' ',r'$0.6$',' ',r'$0.8$']
 axs[0].set_yticklabels(tick_list,fontsize=12)
 axs[2].set_yticklabels(tick_list,fontsize=12)
 axs[1].set_yticklabels([])
 axs[3].set_yticklabels([])
 
-tick_list=['',r'$0$',r'$10^{-4}$',r'$10^{-3}$',r'$10^{-2}$']
+#tick_list=['',r'$0$','', r'$10^{-4}$', '', r'$10^{-3}$', '', r'$10^{-2}$']
+tick_list=['',r'$0$', r'$10^{-4}$',  r'$10^{-3}$', r'$10^{-2}$']
 axs[2].set_xticklabels(tick_list,fontsize=12)
 axs[3].set_xticklabels(tick_list,fontsize=12)
 axs[0].set_xticklabels([])
@@ -218,11 +219,10 @@ axs[2].set_xlabel(r'Fluctuation intensity $\sigma^2$',x=1.15,fontsize=14)
 #remove duplicate legend entries
 handles, labels = axs[0].get_legend_handles_labels()
 by_label = dict(zip(labels, handles))
-axs[0].legend(by_label.values(), by_label.keys(),loc=[0.1,.8],fontsize=10)
+axs[0].legend(by_label.values(), by_label.keys(), loc=[0.01,.7],fontsize=9)
 
-#plt.savefig('violinplot_N'+str(N)+'.pdf',bbox_inches='tight')
+plt.savefig('violinplot_N'+str(N)+'_a2'+str(a**2)+'_th'+str(theta)+'.pdf',bbox_inches='tight')
 
-#ax.set_xlabel(r'Fluctuation intensity $\sigma^2$',fontsize=14)
 
 ###################
 #%%
