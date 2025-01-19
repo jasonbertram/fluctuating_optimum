@@ -148,7 +148,7 @@ plt.close('all')
 
 
 #%%
-#===================================================
+########################################
 #multipanel sigma2 dependency
 offset=1e-5
 
@@ -223,9 +223,8 @@ axs[0].legend(by_label.values(), by_label.keys(), loc=[0.01,.7],fontsize=9)
 
 plt.savefig('violinplot_N'+str(N)+'_a2'+str(a**2)+'_th'+str(theta)+'.pdf',bbox_inches='tight')
 
-
-###################
 #%%
+######################################
 #Stablizing picture
 
 x=np.linspace(-2,2.1,1000)
@@ -234,10 +233,8 @@ fig,ax=plt.subplots(figsize=[4,2.7])
 
 ax.plot(x,np.exp(-x**2),'r',label='Fitness')
 ax.plot(x,np.exp(-10*x**2),'b',label='Population')
-
 ax.set_xticklabels([])
 ax.set_xlabel(r'Trait value',fontsize=14)
-
 ax.set_yticklabels([])
 ax.set_ylabel(r'Distribution',fontsize=14)
 
@@ -245,11 +242,9 @@ xpos=0.4
 plt.annotate(text='', xy=(-xpos,np.exp(-10*xpos**2)), xytext=(xpos,np.exp(-10*xpos**2)), arrowprops=dict(arrowstyle='<->'))
 plt.annotate(text=r'$V_g+V_e$',xy=(-0.435,np.exp(-0.15*xpos**2)-0.15),xytext=(-0.435,np.exp(-10*xpos**2)-0.15),fontsize=14)
 
-
 xpos=0.6
 plt.annotate(text='', xy=(-xpos,np.exp(-xpos**2)), xytext=(xpos,np.exp(-xpos**2)), arrowprops=dict(arrowstyle='<->'))
 plt.annotate(text=r'$V_s$',xy=(-0.15,np.exp(-xpos**2)-0.15),xytext=(-0.15,np.exp(-xpos**2)-0.15),fontsize=14)
-
 
 plt.annotate(text=r'Trait optimum',xy=(0,1),xytext=(0,1.1),fontsize=12,arrowprops=dict(arrowstyle='->'))
 
@@ -259,6 +254,7 @@ plt.legend(loc='upper left',frameon=False)
 
 #plt.savefig("stablizing.eps")
 
+###################
 #%%
 #Latter-Bulmer predictions
 
@@ -283,6 +279,7 @@ plt.ylim([0,1])
 plt.tight_layout()
 #plt.savefig("LB.pdf")
 
+###################
 #%%
 #Finite N Latter-Bulmer predictions
 mu=6.6e-9
@@ -406,18 +403,19 @@ ax.set_xlabel('Time')
 plt.plot(opts)
 plt.tight_layout()
 
-%plt.savefig("random_walk.pdf")
+#plt.savefig("random_walk.pdf")
 
+##################################
 #%%
 #Latter-Bulmer_fluctuation predictions 
 
 mu=6.6e-9
 sigma2=1e-2
+N=10000
 
 Ls=np.exp(np.linspace(np.log(1.2e4),np.log(1.2e8),20))
 plt.plot(np.log10(Ls),Vg_LB(mu,Ls,20)/(1+Vg_LB(mu,Ls,20)),label=r'$V_s=20, \sigma^2=0$')
 plt.plot(np.log10(Ls),Vg_LB(mu,Ls,5)/(1+Vg_LB(mu,Ls,5)),label=r'$V_s=5, \sigma^2=0$ ')
-
 
 #rescale for computational stability
 Ls=1e-3*Ls
@@ -439,20 +437,38 @@ for _ in Ls:
 
 plt.plot(np.log10(Ls)+3,h2_theory,'--',label=r'$V_s=5, \sigma^2=10^{-2}$')
 
-plt.fill_between(np.log10(Ls)+3,[0.1],[0.6],alpha=0.5)
+unique_params=set([_[:1]+_[2:6] for _ in params 
+                   if _[-3]==0.1 and _[2]==N and _[1]==1e-2])
+indices=[_ for _ in range(len(params)) 
+         if params[_][-3]==0.1 and params[_][2]==N and params[_][1]==1e-2]
+
+for i in indices:
+    L,sigma_e2,N,V_s,mu,a2,theta,rep=params[i]
+    
+    if V_s==5:
+        violin_displace=-0.1
+        col="Red"
+    else:
+        violin_displace=0.1
+        col="Blue"
+    
+    parts=plt.violinplot(
+            Vg_sims[i]/(Vg_sims[i]+1),
+            positions=[np.log10(1e3*L)+violin_displace],
+            widths=0.1,showmeans=True)
+    
+    for _ in parts['bodies']: _.set_facecolor(col)
+    
+plt.axhspan(0.1,0.6,color='k',alpha=0.2)
 
 plt.xlabel(r'Target size (fraction of euchromatic genome)',fontsize=14)
 plt.ylabel(r'Heritability',fontsize=14)
 
-plt.gca().set_xticklabels(['',r'$10^{-4}$','',r'$10^{-3}$','',r'$10^{-2}$','',r'$10^{-1}$','',r'$1$'],fontsize=14)
+#plt.gca().set_xticklabels(['',r'$10^{-4}$','',r'$10^{-3}$','',r'$10^{-2}$','',r'$10^{-1}$','',r'$1$'],fontsize=14)
 plt.yticks(fontsize=14)
 
 plt.ylim([0,1])
 plt.tight_layout()
 plt.legend(fontsize=12)
-
-#plt.figure()
-#plt.plot(h2_theory/(Vg_LB(mu,Ls,5)/(1+Vg_LB(mu,Ls,5))))
-
 
 #plt.savefig("LB_fluc.pdf")
