@@ -221,7 +221,8 @@ handles, labels = axs[0].get_legend_handles_labels()
 by_label = dict(zip(labels, handles))
 axs[0].legend(by_label.values(), by_label.keys(), loc=[0.01,.7],fontsize=9)
 
-plt.savefig('violinplot_N'+str(N)+'_a2'+str(a**2)+'_th'+str(theta)+'.pdf',bbox_inches='tight')
+plt.savefig('violinplot_N'+str(N)+'_a2'+str(a**2)+'_th'+str(theta)+'.pdf',
+            bbox_inches='tight')
 
 #%%
 ######################################
@@ -408,14 +409,20 @@ plt.tight_layout()
 ##################################
 #%%
 #Latter-Bulmer_fluctuation predictions 
+import matplotlib.patches as mpatches
 
 mu=6.6e-9
 sigma2=1e-2
 N=10000
 
+plt.figure(figsize=[6,4])
+
 Ls=np.exp(np.linspace(np.log(1.2e4),np.log(1.2e8),20))
-plt.plot(np.log10(Ls),Vg_LB(mu,Ls,20)/(1+Vg_LB(mu,Ls,20)),label=r'$V_s=20, \sigma^2=0$')
-plt.plot(np.log10(Ls),Vg_LB(mu,Ls,5)/(1+Vg_LB(mu,Ls,5)),label=r'$V_s=5, \sigma^2=0$ ')
+plt.plot(np.log10(Ls),
+         Vg_LB(mu,Ls,20)/(1+Vg_LB(mu,Ls,20)),
+         label=r'$V_s=20, \sigma^2=0$ (Latter-Bulmer)') 
+plt.plot(np.log10(Ls), Vg_LB(mu,Ls,5)/(1+Vg_LB(mu,Ls,5)),
+         label=r'$V_s=5,$  $\sigma^2=0$ (Latter-Bulmer)')
 
 #rescale for computational stability
 Ls=1e-3*Ls
@@ -428,14 +435,16 @@ for _ in Ls:
     temp=Vg_pred_consistent(1e-1,10000,mu,0.3,_,sigma2,20)
     h2_theory.append(temp/(1+temp))
 
-plt.plot(np.log10(Ls)+3,h2_theory,'--',label=r'$V_s=20, \sigma^2=10^{-2}$')
+plt.plot(np.log10(Ls)+3,
+         h2_theory,'b--',label=r'$V_s=20, \sigma^2=10^{-2}$ (Diff. Approx.)')
 
 h2_theory=[]
 for _ in Ls:
     temp=Vg_pred_consistent(1e-1,10000,mu,0.3,_,sigma2,5)
     h2_theory.append(temp/(1+temp))
 
-plt.plot(np.log10(Ls)+3,h2_theory,'--',label=r'$V_s=5, \sigma^2=10^{-2}$')
+plt.plot(np.log10(Ls)+3,
+         h2_theory,'r--',label=r'$V_s=5,$  $\sigma^2=10^{-2}$ (Diff. Approx.)')
 
 unique_params=set([_[:1]+_[2:6] for _ in params 
                    if _[-3]==0.1 and _[2]==N and _[1]==1e-2])
@@ -446,10 +455,10 @@ for i in indices:
     L,sigma_e2,N,V_s,mu,a2,theta,rep=params[i]
     
     if V_s==5:
-        violin_displace=-0.1
+        violin_displace=-0.05
         col="Red"
     else:
-        violin_displace=0.1
+        violin_displace=0.05
         col="Blue"
     
     parts=plt.violinplot(
@@ -457,18 +466,29 @@ for i in indices:
             positions=[np.log10(1e3*L)+violin_displace],
             widths=0.1,showmeans=True)
     
-    for _ in parts['bodies']: _.set_facecolor(col)
-    
-plt.axhspan(0.1,0.6,color='k',alpha=0.2)
+    for _ in parts['bodies']: 
+        _.set_color(col)
+        _.set_edgecolor(col)
 
-plt.xlabel(r'Target size (fraction of euchromatic genome)',fontsize=14)
-plt.ylabel(r'Heritability',fontsize=14)
+    for partname in ('cbars','cmins','cmaxes','cmeans'):
+            vp = parts[partname]
+            vp.set_edgecolor(col)
+            vp.set_linewidth(1)
 
-#plt.gca().set_xticklabels(['',r'$10^{-4}$','',r'$10^{-3}$','',r'$10^{-2}$','',r'$10^{-1}$','',r'$1$'],fontsize=14)
-plt.yticks(fontsize=14)
+plt.axhspan(0.1,0.6,color='k',alpha=0.1)
 
-plt.ylim([0,1])
-plt.tight_layout()
-plt.legend(fontsize=12)
+plt.xlabel(r'Target size (fraction of euchromatic genome)',fontsize=10)
+plt.ylabel(r'Heritability',fontsize=10)
 
-#plt.savefig("LB_fluc.pdf")
+plt.gca().set_xticklabels(
+        ['',r'$10^{-4}$','',r'$10^{-3}$','',r'$10^{-2}$','',r'$10^{-1}$','',r'$1$'],
+        fontsize=10)
+plt.yticks(fontsize=10)
+handles, labels = plt.gca().get_legend_handles_labels()
+patch = mpatches.Patch(color='blue', label=r'$V_s=20,\sigma^2=10^{-2}$ (Simulation)')
+handles.append(patch)
+patch = mpatches.Patch(color='red', label=r'$V_s=5,$  $\sigma^2=10^{-2}$ (Simulation)')
+handles.append(patch)
+plt.legend(handles=handles, fontsize=8)
+
+plt.savefig("LB_fluc.pdf",bbox_inches='tight')
