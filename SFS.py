@@ -92,6 +92,8 @@ for sigma_e2,N,V_s,mu in itertools.product(sigma_e2s,Ns,Vs,mus):
     
     Vg_sims[str([sigma_e2,N,V_s,mu])]=2*a**2*np.sum(p*(1-p),0)
 
+#np.savetxt('hist_001.txt',phist['0.01'][:,:,0])
+
 #%%
 #Genetic variance versus sigma_e2
 
