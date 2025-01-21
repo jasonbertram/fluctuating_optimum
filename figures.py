@@ -69,9 +69,12 @@ with open(fname,'r') as fin:
 
 Vg_sims=np.loadtxt(fname)
 
+#hist0=np.loadtxt('hist_000.txt')
+hist1=np.loadtxt('hist_001.txt')
 #%%
 ########################################
 #Exploratory plots
+#Not in manuscript
 
 #small offset to avoid log(0)
 offset=1e-5
@@ -143,13 +146,11 @@ for _ in plt.get_figlabels():
     plt.figure(_)
     plt.savefig('/home/jason/git/fluctuating_optimum/'+_+'.png')
 
-plt.close('all')
-
-
+#plt.close('all')
 
 #%%
 ########################################
-#multipanel sigma2 dependency
+#sigma2 dependency
 offset=1e-5
 
 #index of variable on x axis
@@ -164,9 +165,7 @@ indices=[_ for _ in range(len(params)) if params[_][-3]==0.01 and params[_][2]==
 fig_dict=dict(zip(unique_params,axs))
 
 for i in indices:
-
     L,sigma_e2,N,V_s,mu,a2,theta,rep=params[i]
-
     a=np.sqrt(a2)
 
     ax=fig_dict[(L,N,V_s,mu,a2)]
@@ -207,7 +206,6 @@ axs[2].set_yticklabels(tick_list,fontsize=12)
 axs[1].set_yticklabels([])
 axs[3].set_yticklabels([])
 
-#tick_list=['',r'$0$','', r'$10^{-4}$', '', r'$10^{-3}$', '', r'$10^{-2}$']
 tick_list=['',r'$0$', r'$10^{-4}$',  r'$10^{-3}$', r'$10^{-2}$']
 axs[2].set_xticklabels(tick_list,fontsize=12)
 axs[3].set_xticklabels(tick_list,fontsize=12)
@@ -224,8 +222,62 @@ axs[0].legend(by_label.values(), by_label.keys(), loc=[0.01,.7],fontsize=9)
 plt.savefig('violinplot_N'+str(N)+'_a2'+str(a**2)+'_th'+str(theta)+'.pdf',
             bbox_inches='tight')
 
-#%%
 ######################################
+#%%
+
+#fig, axs=plt.subplots(2,2,figsize=[7,7])
+
+#split trajectories so that jumps to zero after fixation are avoided in plot
+def split_traj(hist):
+    temp=[]
+    hist=np.array(hist.transpose())
+    for loc,_ in enumerate(hist):
+        _=np.array(_)
+        ones_pos=np.arange(len(_))[_==1]
+        ones_pos=np.concatenate( ([0],ones_pos,[len(_)]) ) 
+        if len(ones_pos)>2:
+            for i in range(len(ones_pos)-1):
+                traj=np.concatenate(
+                    (np.zeros(ones_pos[i]+1),
+                    _[ones_pos[i]+1:ones_pos[i+1]],
+                    np.ones(len(_)-ones_pos[i+1]))
+                    )
+                if i==0: 
+                    hist[loc]=traj
+                else:
+                    temp.append(traj)
+            
+    return np.concatenate( (hist,np.array(temp)) ).transpose()
+    #return np.array(temp).transpose()
+
+#%%
+temp=[]
+hist=hist.transpose()
+for loc,_ in enumerate(hist):
+    ones_pos=np.arange(len(_))[_==1]
+    ones_pos=np.concatenate( ([0],ones_pos,[len(_)]) ) 
+    if len(ones_pos)>2:
+        print(loc)
+        for i in range(len(ones_pos)-1):
+            traj=np.concatenate(
+                (np.zeros(ones_pos[i]+1),
+                _[ones_pos[i]+1:ones_pos[i+1]],
+                np.ones(len(_)-ones_pos[i+1]))
+                )
+            if i==0: 
+                hist[loc]=traj
+            else:
+                temp.append(traj)
+#%%
+for i,p in enumerate([hist0[10000:15000,:],hist1[10000:15000,:]]):
+    axs[0,i].plot(p)
+    axs[0,i].set_ylim([0,1])
+    Vg=np.sum(0.1*p*(1-p),1)
+    axs[1,i].plot(Vg/(1+Vg))
+    axs[1,i].set_ylim([0,1])
+
+######################################
+#%%
 #Stablizing picture
 
 x=np.linspace(-2,2.1,1000)
@@ -281,48 +333,6 @@ plt.tight_layout()
 #plt.savefig("LB.pdf")
 
 ###################
-#%%
-#Finite N Latter-Bulmer predictions
-mu=6.6e-9
-
-Ls=np.linspace(1.2e4,1.2e8,10000)
-plt.plot(np.log10(Ls),Vg_LB(mu,Ls,20)/(1+Vg_LB(mu,Ls,20)),label=r'$V_s=20V_e, N\rightarrow\infty$')
-plt.plot(np.log10(Ls),Vg_LB(mu,Ls,5)/(1+Vg_LB(mu,Ls,5)),label=r'$V_s=5V_e, N\rightarrow\infty$')
-
-plt.fill_between(np.log10(Ls),[0.1],[0.6],alpha=0.5)
-
-plt.xlabel(r'Target size (fraction of euchromatic genome)',fontsize=14)
-plt.ylabel(r'Heritability',fontsize=14)
-
-plt.gca().set_xticklabels(['',r'$10^{-4}$','',r'$10^{-3}$','',r'$10^{-2}$','',r'$10^{-1}$','',r'$1$'],fontsize=14)
-plt.yticks(fontsize=14)
-
-plt.gca().set_prop_cycle(None)
-
-Ls=np.array([10,50,1e2,5e2,1e3,5e3,1e4,5e4,1e5])
-mu=mu*1e3
-
-h2_theory=[]
-for _ in Ls:
-
-    temp=Vg_pred_consistent(1e-1,1000,mu,0.3,_,0,20)
-    h2_theory.append(temp/(1+temp))
-
-plt.plot(np.log10(Ls)+3,h2_theory,'--',label=r'$V_s=20V_e, N=1000$')
-
-
-h2_theory=[]
-for _ in Ls:
-
-    temp=Vg_pred_consistent(1e-1,1000,mu,0.3,_,0,5)
-    h2_theory.append(temp/(1+temp))
-
-plt.plot(np.log10(Ls)+3,h2_theory,'--',label=r'$V_s=5V_e, N=1000$')
-plt.ylim([0,1])
-plt.tight_layout()
-plt.legend(fontsize=14)
-
-#plt.savefig("LB_drift.pdf")
 
 #%%
 #Moving optimum picture
@@ -370,41 +380,15 @@ ax.set_xlabel(r'Trait value',fontsize=14)
 ax.set_ylabel(r'Distribution',fontsize=14)
 
 xpos=0.4
-plt.annotate(s='', xy=(-0.5,1.0), xytext=(0.8,1.0), arrowprops=dict(arrowstyle='<-',linewidth='2'))
+plt.annotate(s='', xy=(-0.5,1.0), xytext=(0.8,1.0), 
+             arrowprops=dict(arrowstyle='<-',linewidth='2'))
 
 plt.annotate(s=r'Rate $\propto V_g$',xy=(0.,1.025), xytext=(-0.4,1.025))
-
 plt.ylim([0,1.1])
-
 plt.tight_layout()
-
 plt.legend(loc='upper left',frameon=False)
 
 plt.savefig("stablizing_lande.eps")
-
-
-#%%
-
-sigma2=1e-2
-theta=0e-2
-
-plt.figure(figsize=[3,2])
-ax=plt.gca()
-
-opts=np.zeros(1000)
-for _ in range(1,1000):
-    opts[_]=(1-theta)*opts[_-1] + np.random.normal(0,np.sqrt(sigma2))
-
-ax.set_yticklabels([])
-ax.set_xticklabels([])
-
-ax.set_ylabel('Trait optimum')
-ax.set_xlabel('Time')
-
-plt.plot(opts)
-plt.tight_layout()
-
-#plt.savefig("random_walk.pdf")
 
 ##################################
 #%%
@@ -419,9 +403,9 @@ plt.figure(figsize=[6,4])
 
 Ls=np.exp(np.linspace(np.log(1.2e4),np.log(1.2e8),20))
 plt.plot(np.log10(Ls),
-         Vg_LB(mu,Ls,20)/(1+Vg_LB(mu,Ls,20)),
+         Vg_LB(mu,Ls,20)/(1+Vg_LB(mu,Ls,20)),'--',
          label=r'$V_s=20, \sigma^2=0$ (Latter-Bulmer)') 
-plt.plot(np.log10(Ls), Vg_LB(mu,Ls,5)/(1+Vg_LB(mu,Ls,5)),
+plt.plot(np.log10(Ls), Vg_LB(mu,Ls,5)/(1+Vg_LB(mu,Ls,5)),'--',
          label=r'$V_s=5,$  $\sigma^2=0$ (Latter-Bulmer)')
 
 #rescale for computational stability
@@ -436,7 +420,7 @@ for _ in Ls:
     h2_theory.append(temp/(1+temp))
 
 plt.plot(np.log10(Ls)+3,
-         h2_theory,'b--',label=r'$V_s=20, \sigma^2=10^{-2}$ (Diff. Approx.)')
+         h2_theory,'b-',label=r'$V_s=20, \sigma^2=10^{-2}$ (Diff. Approx.)')
 
 h2_theory=[]
 for _ in Ls:
@@ -444,7 +428,7 @@ for _ in Ls:
     h2_theory.append(temp/(1+temp))
 
 plt.plot(np.log10(Ls)+3,
-         h2_theory,'r--',label=r'$V_s=5,$  $\sigma^2=10^{-2}$ (Diff. Approx.)')
+         h2_theory,'r-',label=r'$V_s=5,$  $\sigma^2=10^{-2}$ (Diff. Approx.)')
 
 unique_params=set([_[:1]+_[2:6] for _ in params 
                    if _[-3]==0.1 and _[2]==N and _[1]==1e-2])
@@ -484,11 +468,14 @@ plt.gca().set_xticklabels(
         ['',r'$10^{-4}$','',r'$10^{-3}$','',r'$10^{-2}$','',r'$10^{-1}$','',r'$1$'],
         fontsize=10)
 plt.yticks(fontsize=10)
-handles, labels = plt.gca().get_legend_handles_labels()
-patch = mpatches.Patch(color='blue', label=r'$V_s=20,\sigma^2=10^{-2}$ (Simulation)')
-handles.append(patch)
-patch = mpatches.Patch(color='red', label=r'$V_s=5,$  $\sigma^2=10^{-2}$ (Simulation)')
-handles.append(patch)
-plt.legend(handles=handles, fontsize=8)
 
-plt.savefig("LB_fluc.pdf",bbox_inches='tight')
+handles, labels = plt.gca().get_legend_handles_labels()
+patch = mpatches.Patch(color='blue', alpha=0.5,
+                       label=r'$V_s=20,\sigma^2=10^{-2}$ (Simulation)')
+handles.append(patch)
+patch = mpatches.Patch(color='red', alpha=0.5,
+                       label=r'$V_s=5,$  $\sigma^2=10^{-2}$ (Simulation)')
+handles.append(patch)
+plt.legend(loc='upper left',handles=handles, fontsize=7)
+
+plt.savefig('LB_fluc_'+str(N)+'_a2'+str(a2)+'_th'+str(theta)+'.pdf',bbox_inches='tight')

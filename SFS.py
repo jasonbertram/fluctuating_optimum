@@ -23,16 +23,17 @@ def p_prime_sel_opt(p,delt_opt,a,sign,V_s):
     p=pmap(rhomap(p)*np.exp(S*a*sign*(delt_opt+0.5*a*sign*(2*p-1))))    
     return p
 
+#####################
 #%%%
 #Single core simulation
 
 Vg_sims={}
 
 L=1000
-rep=5
+rep=1
 
 #sigma_e2s=np.array([0,1e-3,1e-2])
-sigma_e2s=np.array([1e-2])
+sigma_e2s=np.array([0e-2])
 
 Ns=np.array([10000])
 Vs=np.array([5])
