@@ -59,6 +59,28 @@ def Vg_theory_opt(x,N,a,sigma_e2,L,mu,Vs):
                 -(0.5+d)**(1-b_t))/(b_t-1)-x)
 
 
+#split AF trajectories so that jumps to zero after fixation are avoided in plot
+def split_traj(hist):
+    temp=[]
+    hist=np.array(hist.transpose())
+    for loc,_ in enumerate(hist):
+        _=np.array(_)
+        ones_pos=np.arange(len(_))[_==1]
+        ones_pos=np.concatenate( ([0],ones_pos,[len(_)]) ) 
+        if len(ones_pos)>2:
+            for i in range(len(ones_pos)-1):
+                traj=np.concatenate(
+                    (np.zeros(ones_pos[i]+1),
+                    _[ones_pos[i]+1:ones_pos[i+1]],
+                    np.ones(len(_)-ones_pos[i+1]))
+                    )
+                if i==0: 
+                    hist[loc]=traj
+                else:
+                    temp.append(traj)
+            
+    return np.concatenate( (hist,np.array(temp)) ).transpose()
+
 #%%
 #Load data
 
@@ -69,8 +91,10 @@ with open(fname,'r') as fin:
 
 Vg_sims=np.loadtxt(fname)
 
-#hist0=np.loadtxt('hist_000.txt')
-hist1=np.loadtxt('hist_001.txt')
+hist0=np.loadtxt('hist_000.txt')
+hist1=split_traj(np.loadtxt('hist_001.txt'))
+delt=np.loadtxt('delta_hist_001.txt')
+
 #%%
 ########################################
 #Exploratory plots
@@ -225,56 +249,37 @@ plt.savefig('violinplot_N'+str(N)+'_a2'+str(a**2)+'_th'+str(theta)+'.pdf',
 ######################################
 #%%
 
-#fig, axs=plt.subplots(2,2,figsize=[7,7])
+fig, axs=plt.subplots(3,1,figsize=[3,6])
 
-#split trajectories so that jumps to zero after fixation are avoided in plot
-def split_traj(hist):
-    temp=[]
-    hist=np.array(hist.transpose())
-    for loc,_ in enumerate(hist):
-        _=np.array(_)
-        ones_pos=np.arange(len(_))[_==1]
-        ones_pos=np.concatenate( ([0],ones_pos,[len(_)]) ) 
-        if len(ones_pos)>2:
-            for i in range(len(ones_pos)-1):
-                traj=np.concatenate(
-                    (np.zeros(ones_pos[i]+1),
-                    _[ones_pos[i]+1:ones_pos[i+1]],
-                    np.ones(len(_)-ones_pos[i+1]))
-                    )
-                if i==0: 
-                    hist[loc]=traj
-                else:
-                    temp.append(traj)
-            
-    return np.concatenate( (hist,np.array(temp)) ).transpose()
-    #return np.array(temp).transpose()
+t1=95000
+t2=100000
 
-#%%
-temp=[]
-hist=hist.transpose()
-for loc,_ in enumerate(hist):
-    ones_pos=np.arange(len(_))[_==1]
-    ones_pos=np.concatenate( ([0],ones_pos,[len(_)]) ) 
-    if len(ones_pos)>2:
-        print(loc)
-        for i in range(len(ones_pos)-1):
-            traj=np.concatenate(
-                (np.zeros(ones_pos[i]+1),
-                _[ones_pos[i]+1:ones_pos[i+1]],
-                np.ones(len(_)-ones_pos[i+1]))
-                )
-            if i==0: 
-                hist[loc]=traj
-            else:
-                temp.append(traj)
-#%%
-for i,p in enumerate([hist0[10000:15000,:],hist1[10000:15000,:]]):
-    axs[0,i].plot(p)
-    axs[0,i].set_ylim([0,1])
-    Vg=np.sum(0.1*p*(1-p),1)
-    axs[1,i].plot(Vg/(1+Vg))
-    axs[1,i].set_ylim([0,1])
+axs[0].plot(hist1[t1:t2,:],'gray', linewidth=0.5)
+axs[0].plot(hist0[t1:t2,:],'k', linewidth=0.5)
+axs[0].set_ylim([0,1.])
+axs[0].set_xlim([0,t2-t1])
+axs[0].set_xticklabels([])
+axs[0].set_ylabel(r'Frequency',fontsize=10)
+
+Vg=np.sum(0.1*hist0[t1:t2,:]*(1-hist0[t1:t2,:]),1)
+axs[1].plot(Vg/(1+Vg),'k',label=r'$\sigma^2=0$ (Latter-Bulmer)')
+Vg=np.sum(0.1*hist1[t1:t2,:]*(1-hist1[t1:t2,:]),1)
+axs[1].plot(Vg/(1+Vg),'gray',label=r'$\sigma^2=10^{-2}$')
+axs[1].set_ylim([0,0.8])
+axs[1].set_xlim([0,t2-t1])
+axs[1].set_xticklabels([])
+axs[1].set_ylabel(r'Heritability',fontsize=10)
+
+axs[2].plot(delt[t1:t2],'gray')
+axs[2].axhline(y=0,color='k')
+axs[2].set_xlim([0,t2-t1])
+axs[2].set_ylabel(r'Optimum displacement $\delta$',fontsize=10)
+axs[2].set_xlabel(r'Generations')
+
+#axs[1].legend(loc=[0.01,1.8])
+axs[1].legend(loc='upper left',fontsize=7)
+
+plt.savefig('timeseries.pdf',bbox_inches='tight')
 
 ######################################
 #%%
