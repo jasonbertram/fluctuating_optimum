@@ -84,7 +84,7 @@ def split_traj(hist):
 #%%
 #Load data
 
-fname="Vg_sims_th0"
+fname="Vg_sims_th1m3"
 with open(fname,'r') as fin:
     params=eval(fin.readline()[2:-1])
     #parameter format: L,sigma_e2,N,V_s,mu,a2,theta,rep
@@ -184,8 +184,8 @@ N=10000
 fig, axs=plt.subplots(2,2,figsize=[7,7])
 axs=axs.flat
 
-unique_params=set([_[:1]+_[2:6] for _ in params if _[-3]==0.01 and _[2]==N])
-indices=[_ for _ in range(len(params)) if params[_][-3]==0.01 and params[_][2]==N]
+unique_params=set([_[:1]+_[2:6] for _ in params if _[-3]==0.1 and _[2]==N])
+indices=[_ for _ in range(len(params)) if params[_][-3]==0.1 and params[_][2]==N]
 fig_dict=dict(zip(unique_params,axs))
 
 for i in indices:
@@ -199,20 +199,20 @@ for i in indices:
             positions=[np.log10(sigma_e2+offset)],
             widths=0.25,showmeans=True)
    
-    scaleVg=Vg_LB(mu,L,V_s)+np.sqrt(V_s*sigma_e2)
-    ax.plot(
-            np.log10(params[i][xvar]+offset),
-            scaleVg/(scaleVg+1),
-            'ko',markersize=5,
-            label=r'$4L\mu V_s+\sqrt{V_s\sigma^2}$',alpha=0.7)
-    
-    Vg_numerical=Vg_pred_consistent(5e-1,N,mu,a,L,sigma_e2,V_s)
-    
-    ax.plot(
-            np.log10(params[i][xvar]+offset),
-            Vg_numerical/(Vg_numerical+1),
-            'kx',markersize=10,
-            label=r'Diffusion approx. (numerical)',alpha=0.7)
+    #scaleVg=Vg_LB(mu,L,V_s)+np.sqrt(V_s*sigma_e2)
+    #ax.plot(
+    #        np.log10(params[i][xvar]+offset),
+    #        scaleVg/(scaleVg+1),
+    #        'ko',markersize=5,
+    #        label=r'$4L\mu V_s+\sqrt{V_s\sigma^2}$',alpha=0.7)
+    #
+    #Vg_numerical=Vg_pred_consistent(5e-1,N,mu,a,L,sigma_e2,V_s)
+    #
+    #ax.plot(
+    #        np.log10(params[i][xvar]+offset),
+    #        Vg_numerical/(Vg_numerical+1),
+    #        'kx',markersize=10,
+    #        label=r'Diffusion approx. (numerical)',alpha=0.7)
         
     ax.set_ylim([0,.8])
     ax.set_title(r'$L=$'+str(L)+r'$,V_s=$'+str(V_s),y=.99,fontsize=11)
