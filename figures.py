@@ -84,16 +84,16 @@ def split_traj(hist):
 #%%
 #Load data
 
-fname="Vg_sims_th1m3"
+fname="Vg_sims_th0"
 with open(fname,'r') as fin:
     params=eval(fin.readline()[2:-1])
     #parameter format: L,sigma_e2,N,V_s,mu,a2,theta,rep
 
 Vg_sims=np.loadtxt(fname)
 
-hist0=np.loadtxt('hist_000.txt')
-hist1=split_traj(np.loadtxt('hist_001.txt'))
-delt=np.loadtxt('delta_hist_001.txt')
+#hist0=np.loadtxt('hist_000.txt')
+#hist1=split_traj(np.loadtxt('hist_001.txt'))
+#delt=np.loadtxt('delta_hist_001.txt')
 
 #%%
 ########################################
