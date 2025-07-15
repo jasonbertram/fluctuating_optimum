@@ -91,9 +91,9 @@ with open(fname,'r') as fin:
 
 Vg_sims=np.loadtxt(fname)
 
-#hist0=np.loadtxt('hist_000.txt')
-#hist1=split_traj(np.loadtxt('hist_001.txt'))
-#delt=np.loadtxt('delta_hist_001.txt')
+hist0=np.loadtxt('hist_000.txt')
+hist1=split_traj(np.loadtxt('hist_001.txt'))
+delt=np.loadtxt('delta_hist_001.txt')
 
 #%%
 ########################################

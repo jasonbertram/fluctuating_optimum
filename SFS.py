@@ -32,7 +32,7 @@ Vg_sims={}
 L=1000
 rep=1
 
-sigma_e2s=np.array([1e-2])
+sigma_e2s=np.array([0*1e-2])
 
 Ns=np.array([10000])
 Vs=np.array([5])
@@ -91,8 +91,11 @@ for sigma_e2,N,V_s,mu in itertools.product(sigma_e2s,Ns,Vs,mus):
     
     Vg_sims[str([sigma_e2,N,V_s,mu])]=2*a**2*np.sum(p*(1-p),0)
 
+np.savetxt('hist_000.txt',phist['0.0'][:,:,0])
 #np.savetxt('hist_001.txt',phist['0.01'][:,:,0])
-np.savetxt('delta_hist_001.txt',opt_hist-zbar_hist)
+#np.savetxt('delta_hist_001.txt',opt_hist-zbar_hist)
+
+
 #%%
 #Genetic variance versus sigma_e2
 
