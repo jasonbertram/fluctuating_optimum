@@ -84,16 +84,16 @@ def split_traj(hist):
 #%%
 #Load data
 
-fname="Vg_sims_th0"
+fname="Vg_sims_th5m3"
 with open(fname,'r') as fin:
     params=eval(fin.readline()[2:-1])
     #parameter format: L,sigma_e2,N,V_s,mu,a2,theta,rep
 
 Vg_sims=np.loadtxt(fname)
 
-hist0=np.loadtxt('hist_000.txt')
-hist1=split_traj(np.loadtxt('hist_001.txt'))
-delt=np.loadtxt('delta_hist_001.txt')
+#hist0=np.loadtxt('hist_000.txt')
+#hist1=split_traj(np.loadtxt('hist_001.txt'))
+#delt=np.loadtxt('delta_hist_001.txt')
 
 #%%
 ########################################
@@ -181,11 +181,12 @@ offset=1e-5
 xvar=1
 
 N=10000
+a2=0.1
 fig, axs=plt.subplots(2,2,figsize=[7,7])
 axs=axs.flat
 
-unique_params=set([_[:1]+_[2:6] for _ in params if _[-3]==0.1 and _[2]==N])
-indices=[_ for _ in range(len(params)) if params[_][-3]==0.1 and params[_][2]==N]
+unique_params=set([_[:1]+_[2:6] for _ in params if _[-3]==a2 and _[2]==N])
+indices=[_ for _ in range(len(params)) if params[_][-3]==a2 and params[_][2]==N]
 fig_dict=dict(zip(unique_params,axs))
 
 for i in indices:
@@ -199,20 +200,20 @@ for i in indices:
             positions=[np.log10(sigma_e2+offset)],
             widths=0.25,showmeans=True)
    
-    #scaleVg=Vg_LB(mu,L,V_s)+np.sqrt(V_s*sigma_e2)
-    #ax.plot(
-    #        np.log10(params[i][xvar]+offset),
-    #        scaleVg/(scaleVg+1),
-    #        'ko',markersize=5,
-    #        label=r'$4L\mu V_s+\sqrt{V_s\sigma^2}$',alpha=0.7)
-    #
-    #Vg_numerical=Vg_pred_consistent(5e-1,N,mu,a,L,sigma_e2,V_s)
-    #
-    #ax.plot(
-    #        np.log10(params[i][xvar]+offset),
-    #        Vg_numerical/(Vg_numerical+1),
-    #        'kx',markersize=10,
-    #        label=r'Diffusion approx. (numerical)',alpha=0.7)
+    scaleVg=Vg_LB(mu,L,V_s)+np.sqrt(V_s*sigma_e2)
+    ax.plot(
+            np.log10(params[i][xvar]+offset),
+            scaleVg/(scaleVg+1),
+            'ko',markersize=5,
+            label=r'$4L\mu V_s+\sqrt{V_s\sigma^2}$',alpha=0.7)
+    
+    Vg_numerical=Vg_pred_consistent(5e-1,N,mu,a,L,sigma_e2,V_s)
+    
+    ax.plot(
+            np.log10(params[i][xvar]+offset),
+            Vg_numerical/(Vg_numerical+1),
+            'kx',markersize=10,
+            label=r'Diffusion approx. (numerical)',alpha=0.7)
         
     ax.set_ylim([0,.8])
     ax.set_title(r'$L=$'+str(L)+r'$,V_s=$'+str(V_s),y=.99,fontsize=11)
@@ -243,11 +244,12 @@ handles, labels = axs[0].get_legend_handles_labels()
 by_label = dict(zip(labels, handles))
 axs[0].legend(by_label.values(), by_label.keys(), loc=[0.01,.7],fontsize=9)
 
-plt.savefig('violinplot_N'+str(N)+'_a2'+str(a**2)+'_th'+str(theta)+'.pdf',
+plt.savefig('violinplot_N'+str(N)+'_a2'+str(a2)+'_th'+str(theta)+'.pdf',
             bbox_inches='tight')
 
 ######################################
 #%%
+#timeseries figure
 
 fig, axs=plt.subplots(3,1,figsize=[3,6])
 
@@ -284,6 +286,7 @@ plt.savefig('timeseries.pdf',bbox_inches='tight')
 ######################################
 #%%
 #Stablizing picture
+#not used in manuscript
 
 x=np.linspace(-2,2.1,1000)
 
@@ -315,6 +318,7 @@ plt.legend(loc='upper left',frameon=False)
 ###################
 #%%
 #Latter-Bulmer predictions
+#not used in manuscript
 
 mu=6.6e-9
 
@@ -341,6 +345,7 @@ plt.tight_layout()
 
 #%%
 #Moving optimum picture
+#not used in manuscript
 
 x=np.linspace(-2,2.1,1000)
 
@@ -404,14 +409,14 @@ mu=6.6e-9
 sigma2=1e-2
 N=10000
 
-plt.figure(figsize=[6,4])
+plt.figure(figsize=[3,2])
 
 Ls=np.exp(np.linspace(np.log(1.2e4),np.log(1.2e8),20))
 plt.plot(np.log10(Ls),
          Vg_LB(mu,Ls,20)/(1+Vg_LB(mu,Ls,20)),'--',
-         label=r'$V_s=20, \sigma^2=0$ (Latter-Bulmer)') 
+         label=r'$V_s=20, \sigma^2=0$ (LB)') 
 plt.plot(np.log10(Ls), Vg_LB(mu,Ls,5)/(1+Vg_LB(mu,Ls,5)),'--',
-         label=r'$V_s=5,$  $\sigma^2=0$ (Latter-Bulmer)')
+         label=r'$V_s=5,$  $\sigma^2=0$ (LB)')
 
 #rescale for computational stability
 Ls=1e-3*Ls
@@ -425,7 +430,7 @@ for _ in Ls:
     h2_theory.append(temp/(1+temp))
 
 plt.plot(np.log10(Ls)+3,
-         h2_theory,'b-',label=r'$V_s=20, \sigma^2=10^{-2}$ (Diff. Approx.)')
+         h2_theory,'b-',label=r'$V_s=20, \sigma^2=10^{-2}$ (Diff.)')
 
 h2_theory=[]
 for _ in Ls:
@@ -433,7 +438,7 @@ for _ in Ls:
     h2_theory.append(temp/(1+temp))
 
 plt.plot(np.log10(Ls)+3,
-         h2_theory,'r-',label=r'$V_s=5,$  $\sigma^2=10^{-2}$ (Diff. Approx.)')
+         h2_theory,'r-',label=r'$V_s=5,$  $\sigma^2=10^{-2}$ (Diff.)')
 
 unique_params=set([_[:1]+_[2:6] for _ in params 
                    if _[-3]==0.1 and _[2]==N and _[1]==1e-2])
@@ -466,7 +471,7 @@ for i in indices:
 
 plt.axhspan(0.1,0.6,color='k',alpha=0.1)
 
-plt.xlabel(r'Target size (fraction of euchromatic genome)',fontsize=10)
+plt.xlabel(r'Target size (fraction of genome)',fontsize=10)
 plt.ylabel(r'Heritability',fontsize=10)
 
 plt.gca().set_xticklabels(
@@ -476,11 +481,11 @@ plt.yticks(fontsize=10)
 
 handles, labels = plt.gca().get_legend_handles_labels()
 patch = mpatches.Patch(color='blue', alpha=0.5,
-                       label=r'$V_s=20,\sigma^2=10^{-2}$ (Simulation)')
+                       label=r'$V_s=20,\sigma^2=10^{-2}$ (Sim.)')
 handles.append(patch)
 patch = mpatches.Patch(color='red', alpha=0.5,
-                       label=r'$V_s=5,$  $\sigma^2=10^{-2}$ (Simulation)')
+                       label=r'$V_s=5,$  $\sigma^2=10^{-2}$ (Sim.)')
 handles.append(patch)
-plt.legend(loc='upper left',handles=handles, fontsize=7)
+plt.legend(loc='upper left',handles=handles, fontsize=4.5)
 
 plt.savefig('LB_fluc_'+str(N)+'_a2'+str(a2)+'_th'+str(theta)+'.pdf',bbox_inches='tight')
