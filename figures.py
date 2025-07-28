@@ -84,93 +84,16 @@ def split_traj(hist):
 #%%
 #Load data
 
-fname="Vg_sims_th5m3"
+fname="Vg_sims_mum5"
 with open(fname,'r') as fin:
     params=eval(fin.readline()[2:-1])
     #parameter format: L,sigma_e2,N,V_s,mu,a2,theta,rep
 
 Vg_sims=np.loadtxt(fname)
 
-#hist0=np.loadtxt('hist_000.txt')
-#hist1=split_traj(np.loadtxt('hist_001.txt'))
+hist0=np.loadtxt('hist_000.txt')
+hist1=split_traj(np.loadtxt('hist_001.txt'))
 #delt=np.loadtxt('delta_hist_001.txt')
-
-#%%
-########################################
-#Exploratory plots
-#Not in manuscript
-
-#small offset to avoid log(0)
-offset=1e-5
-
-#index of variable on x axis
-xvar=1
-
-#log x axis option
-logx=True
-
-indices=[_ for _ in range(len(params)) if params[_][-3]==0.1]
-
-for i in indices:
-
-    plt.figure(str([_ for ind,_ in enumerate(params[i]) if ind != xvar]))
-    ax=plt.gca() 
-
-    L,sigma_e2,N,V_s,mu,a2,theta,rep=params[i]
-    a=np.sqrt(a2)
-    
-    #Vg_theory=scipy.optimize.fsolve(
-    #        lambda x: Vg_theory_opt(x,N,a,sigma_e2,L,mu,V_s),0.025)[0]
-    
-    Vg_numerical=Vg_pred_consistent(2e-1,N,mu,a,L,sigma_e2,V_s)
-    
-    h2_LB=Vg_LB(mu,L,V_s)/(1+Vg_LB(mu,L,V_s))
-    ax.axhline(y=h2_LB,color='k',ls='--')
-    ax.axhspan(0.1,0.6,color='k',alpha=0.02)
-
-    #Simulated heritability violinplots
-    #Environmental variance = 1
-    if logx==True:  
-        ax.violinplot(
-                Vg_sims[i]/(Vg_sims[i]+1),
-                positions=[np.log10(params[i][xvar]+offset)],
-                widths=2e-1,showmeans=True)
-        
-        #ax.plot(
-        #        np.log10(params[i][xvar]+offset),
-        #        Vg_theory/(Vg_theory+1),
-        #        'ko',fillstyle='none',markersize=8,
-        #        label=r'Theory analytical',alpha=0.7)
-        
-        ax.plot(
-                np.log10(params[i][xvar]+offset),
-                Vg_numerical/(Vg_numerical+1),
-                'kx',markersize=10,
-                label=r'Diffusion approximation MSB',alpha=0.7)
-        
-    else:
-        ax.violinplot(
-                Vg_sims[i]/(Vg_sims[i]+1),
-                positions=[params[i][xvar]+offset],
-                widths=1e-3,showmeans=True)
-        
-        ax.plot(
-                params[i][xvar]+offset, Vg_theory/(Vg_theory+1),
-                'ko',fillstyle='none',markersize=8,
-                label=r'Theory analytical',alpha=0.7)
-        
-        ax.plot(
-                params[i][xvar]+offset, Vg_numerical/(Vg_numerical+1),
-                'kx',markersize=10,
-                label=r'Theory numerical',alpha=0.7)
-       
-    ax.set_ylim([0,0.8])
-
-for _ in plt.get_figlabels():
-    plt.figure(_)
-    plt.savefig('/home/jason/git/fluctuating_optimum/'+_+'.png')
-
-#plt.close('all')
 
 #%%
 ########################################
@@ -215,7 +138,7 @@ for i in indices:
             'kx',markersize=10,
             label=r'Diffusion approx. (numerical)',alpha=0.7)
         
-    ax.set_ylim([0,.8])
+    ax.set_ylim([0,1])
     ax.set_title(r'$L=$'+str(L)+r'$,V_s=$'+str(V_s),y=.99,fontsize=11)
                     
     h2_LB=Vg_LB(mu,L,V_s)/(1+Vg_LB(mu,L,V_s))
@@ -226,8 +149,8 @@ axs[2].set_ylabel(r'Heritability $h^2$',fontsize=14)
 axs[2].yaxis.set_label_coords(-0.2,1.1)
 
 tick_list=[r'$0.0$',' ',r'$0.2$',' ',r'$0.4$',' ',r'$0.6$',' ',r'$0.8$']
-axs[0].set_yticklabels(tick_list,fontsize=12)
-axs[2].set_yticklabels(tick_list,fontsize=12)
+#axs[0].set_yticklabels(tick_list,fontsize=12)
+#axs[2].set_yticklabels(tick_list,fontsize=12)
 axs[1].set_yticklabels([])
 axs[3].set_yticklabels([])
 
@@ -244,7 +167,7 @@ handles, labels = axs[0].get_legend_handles_labels()
 by_label = dict(zip(labels, handles))
 axs[0].legend(by_label.values(), by_label.keys(), loc=[0.01,.7],fontsize=9)
 
-plt.savefig('violinplot_N'+str(N)+'_a2'+str(a2)+'_th'+str(theta)+'.pdf',
+plt.savefig('violinplot_N'+str(N)+'_a2'+str(a2)+'_th'+str(theta)+'_mu'+str(mu)+'.pdf',
             bbox_inches='tight')
 
 ######################################
@@ -263,9 +186,9 @@ axs[0].set_xlim([0,t2-t1])
 axs[0].set_xticklabels([])
 axs[0].set_ylabel(r'Frequency',fontsize=10)
 
-Vg=np.sum(0.1*hist0[t1:t2,:]*(1-hist0[t1:t2,:]),1)
+Vg=2*np.sum(0.1*hist0[t1:t2,:]*(1-hist0[t1:t2,:]),1)
 axs[1].plot(Vg/(1+Vg),'k',label=r'$\sigma^2=0$ (Latter-Bulmer)')
-Vg=np.sum(0.1*hist1[t1:t2,:]*(1-hist1[t1:t2,:]),1)
+Vg=2*np.sum(0.1*hist1[t1:t2,:]*(1-hist1[t1:t2,:]),1)
 axs[1].plot(Vg/(1+Vg),'gray',label=r'$\sigma^2=10^{-2}$')
 axs[1].set_ylim([0,0.8])
 axs[1].set_xlim([0,t2-t1])
@@ -489,3 +412,96 @@ handles.append(patch)
 plt.legend(loc='upper left',handles=handles, fontsize=4.5)
 
 plt.savefig('LB_fluc_'+str(N)+'_a2'+str(a2)+'_th'+str(theta)+'.pdf',bbox_inches='tight')
+
+
+#%%
+########################################
+#Exploratory plots
+#Not in manuscript
+
+#small offset to avoid log(0)
+offset=1e-5
+
+#index of variable on x axis
+xvar=1
+
+#log x axis option
+logx=True
+
+indices=[_ for _ in range(len(params)) if params[_][-3]==0.1]
+
+for i in indices:
+
+    plt.figure(str([_ for ind,_ in enumerate(params[i]) if ind != xvar]))
+    ax=plt.gca() 
+
+    L,sigma_e2,N,V_s,mu,a2,theta,rep=params[i]
+    a=np.sqrt(a2)
+    
+    #Vg_theory=scipy.optimize.fsolve(
+    #        lambda x: Vg_theory_opt(x,N,a,sigma_e2,L,mu,V_s),0.025)[0]
+    
+    Vg_numerical=Vg_pred_consistent(2e-1,N,mu,a,L,sigma_e2,V_s)
+    
+    h2_LB=Vg_LB(mu,L,V_s)/(1+Vg_LB(mu,L,V_s))
+    ax.axhline(y=h2_LB,color='k',ls='--')
+    ax.axhspan(0.1,0.6,color='k',alpha=0.02)
+
+    #Simulated heritability violinplots
+    #Environmental variance = 1
+    if logx==True:  
+        ax.violinplot(
+                Vg_sims[i]/(Vg_sims[i]+1),
+                positions=[np.log10(params[i][xvar]+offset)],
+                widths=2e-1,showmeans=True)
+        
+        #ax.plot(
+        #        np.log10(params[i][xvar]+offset),
+        #        Vg_theory/(Vg_theory+1),
+        #        'ko',fillstyle='none',markersize=8,
+        #        label=r'Theory analytical',alpha=0.7)
+        
+        ax.plot(
+                np.log10(params[i][xvar]+offset),
+                Vg_numerical/(Vg_numerical+1),
+                'kx',markersize=10,
+                label=r'Diffusion approximation MSB',alpha=0.7)
+        
+    else:
+        ax.violinplot(
+                Vg_sims[i]/(Vg_sims[i]+1),
+                positions=[params[i][xvar]+offset],
+                widths=1e-3,showmeans=True)
+        
+        ax.plot(
+                params[i][xvar]+offset, Vg_theory/(Vg_theory+1),
+                'ko',fillstyle='none',markersize=8,
+                label=r'Theory analytical',alpha=0.7)
+        
+        ax.plot(
+                params[i][xvar]+offset, Vg_numerical/(Vg_numerical+1),
+                'kx',markersize=10,
+                label=r'Theory numerical',alpha=0.7)
+       
+    ax.set_ylim([0,0.8])
+
+for _ in plt.get_figlabels():
+    plt.figure(_)
+    plt.savefig('/home/jason/git/fluctuating_optimum/'+_+'.png')
+
+#plt.close('all')
+
+#########################################
+#%%
+#Autocorrelation timescale and change in Vg
+
+hist1=split_traj(np.loadtxt('hist_001_100.txt'))
+delt=np.loadtxt('delta_hist_001_100.txt')
+delt_pd=pd.Series(delt)
+
+autocor=np.array([delt_pd.autocorr(lag=_) for _ in range(400)])
+plt.plot(np.cumsum(autocor))
+
+plt.plot([np.mean(np.abs(Vg[tau:]-Vg[:-tau])/Vg[tau:]) for tau in range(1,400)]); plt.axvline(40)
+plt.plot(autocor); plt.plot(np.exp(-np.arange(400)/40)); plt.axvline(40)
+
