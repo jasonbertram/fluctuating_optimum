@@ -201,6 +201,16 @@ axs[2].set_xlim([0,t2-t1])
 axs[2].set_ylabel(r'Optimum displacement $\delta$',fontsize=10)
 axs[2].set_xlabel(r'Generations')
 
+inset = axs[1].inset_axes([0.67,0.62,0.3,0.35])
+Vg=np.sum(0.1*hist1[:,:]*(1-hist1[:,:]),1)
+inset.hist(Vg/(1+Vg),bins=20,color='gray')
+Vg=np.sum(0.1*hist0[:,:]*(1-hist0[:,:]),1)
+inset.hist(Vg/(1+Vg),color='k')
+inset.set_yticklabels([])
+inset.set_yticks([])
+inset.set_xticklabels(['',0,0.5],fontsize=8)
+inset.set_xlabel(r'$h^2$',labelpad=-10)
+
 #axs[1].legend(loc=[0.01,1.8])
 axs[1].legend(loc='upper left',fontsize=7)
 
