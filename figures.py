@@ -84,7 +84,7 @@ def split_traj(hist):
 #%%
 #Load data
 
-fname="Vg_sims_mum5"
+fname="Vg_sims_th0"
 with open(fname,'r') as fin:
     params=eval(fin.readline()[2:-1])
     #parameter format: L,sigma_e2,N,V_s,mu,a2,theta,rep
@@ -94,6 +94,58 @@ Vg_sims=np.loadtxt(fname)
 hist0=np.loadtxt('hist_000.txt')
 hist1=split_traj(np.loadtxt('hist_001.txt'))
 delt=np.loadtxt('delta_hist_001.txt')
+
+
+######################################
+#%%
+#timeseries figure
+
+fig, axs=plt.subplots(3,1,figsize=[3,6])
+
+t1=95000
+t2=100000
+
+axs[0].plot(hist1[t1:t2,:],'gray', linewidth=0.5)
+axs[0].plot(hist0[t1:t2,:],'k', linewidth=0.5)
+axs[0].set_ylim([0,1.])
+axs[0].set_xlim([0,t2-t1])
+axs[0].set_xticklabels([])
+axs[0].set_ylabel(r'Frequency',fontsize=10)
+axs[0].annotate(r'$A$',[0.92,0.87],xycoords='axes fraction',fontsize=14)
+
+Vg=2*np.sum(0.1*hist0[t1:t2,:]*(1-hist0[t1:t2,:]),1)
+axs[1].plot(Vg/(1+Vg),'k',label=r'$\sigma^2=0$ (LB)')
+Vg=2*np.sum(0.1*hist1[t1:t2,:]*(1-hist1[t1:t2,:]),1)
+axs[1].plot(Vg/(1+Vg),'gray',label=r'$\sigma^2=10^{-2}$')
+axs[1].set_ylim([0,1])
+axs[1].set_xlim([0,t2-t1])
+axs[1].set_xticklabels([])
+axs[1].set_ylabel(r'Heritability',fontsize=10)
+axs[1].annotate(r'$B$',[0.92,0.87],xycoords='axes fraction',fontsize=14)
+
+axs[2].plot(delt[t1:t2],'gray')
+axs[2].axhline(y=0,color='k')
+axs[2].set_xlim([0,t2-t1])
+axs[2].set_ylabel(r'$\delta_t$',fontsize=10)
+axs[2].set_xlabel(r'Generations')
+axs[2].annotate(r'$C$',[0.92,0.87],xycoords='axes fraction',fontsize=14)
+
+inset = axs[1].inset_axes([0.42,0.69,0.3,0.30])
+Vg=2*np.sum(0.1*hist1[:,:]*(1-hist1[:,:]),1)
+inset.hist(Vg/(1+Vg),bins=20,color='gray')
+Vg=2*np.sum(0.1*hist0[:,:]*(1-hist0[:,:]),1)
+inset.hist(Vg/(1+Vg),color='k')
+inset.set_yticklabels([])
+inset.set_yticks([])
+inset.set_xticks([0,0.6])
+inset.set_xticklabels([0,0.6],fontsize=8)
+inset.set_xlabel(r'$h^2$',labelpad=-10)
+#inset.set_title(r'$h^2$')
+
+axs[1].legend(loc='upper left',fontsize=5)
+#axs[1].legend(loc=[0.01,1.8])
+
+plt.savefig('timeseries.pdf',bbox_inches='tight')
 
 #%%
 ########################################
@@ -170,52 +222,6 @@ axs[0].legend(by_label.values(), by_label.keys(), loc=[0.01,.7],fontsize=9)
 plt.savefig('violinplot_N'+str(N)+'_a2'+str(a2)+'_th'+str(theta)+'_mu'+str(mu)+'.pdf',
             bbox_inches='tight')
 
-######################################
-#%%
-#timeseries figure
-
-fig, axs=plt.subplots(3,1,figsize=[3,6])
-
-t1=95000
-t2=100000
-
-axs[0].plot(hist1[t1:t2,:],'gray', linewidth=0.5)
-axs[0].plot(hist0[t1:t2,:],'k', linewidth=0.5)
-axs[0].set_ylim([0,1.])
-axs[0].set_xlim([0,t2-t1])
-axs[0].set_xticklabels([])
-axs[0].set_ylabel(r'Frequency',fontsize=10)
-
-Vg=2*np.sum(0.1*hist0[t1:t2,:]*(1-hist0[t1:t2,:]),1)
-axs[1].plot(Vg/(1+Vg),'k',label=r'$\sigma^2=0$ (LB)')
-Vg=2*np.sum(0.1*hist1[t1:t2,:]*(1-hist1[t1:t2,:]),1)
-axs[1].plot(Vg/(1+Vg),'gray',label=r'$\sigma^2=10^{-2}$')
-axs[1].set_ylim([0,1])
-axs[1].set_xlim([0,t2-t1])
-axs[1].set_xticklabels([])
-axs[1].set_ylabel(r'Heritability',fontsize=10)
-
-axs[2].plot(delt[t1:t2],'gray')
-axs[2].axhline(y=0,color='k')
-axs[2].set_xlim([0,t2-t1])
-axs[2].set_ylabel(r'Optimum displacement $\delta$',fontsize=10)
-axs[2].set_xlabel(r'Generations')
-
-inset = axs[1].inset_axes([0.67,0.69,0.3,0.30])
-Vg=2*np.sum(0.1*hist1[:,:]*(1-hist1[:,:]),1)
-inset.hist(Vg/(1+Vg),bins=20,color='gray')
-Vg=2*np.sum(0.1*hist0[:,:]*(1-hist0[:,:]),1)
-inset.hist(Vg/(1+Vg),color='k')
-inset.set_yticklabels([])
-inset.set_yticks([])
-inset.set_xticklabels(['',0,0.5],fontsize=8)
-inset.set_xlabel(r'$h^2$',labelpad=-10)
-#inset.set_title(r'$h^2$')
-
-#axs[1].legend(loc=[0.01,1.8])
-axs[1].legend(loc='upper left',fontsize=7)
-
-plt.savefig('timeseries.pdf',bbox_inches='tight')
 
 
 ##################################
@@ -544,3 +550,74 @@ plt.ylim([0,1])
 plt.tight_layout()
 #plt.savefig("LB.pdf")
 
+#%%
+########################################
+#sigma2 dependency excess only
+offset=1e-5
+
+#index of variable on x axis
+xvar=1
+
+N=10000
+a2=0.1
+fig, axs=plt.subplots(2,2,figsize=[7,7])
+axs=axs.flat
+
+unique_params=set([_[:1]+_[2:6] for _ in params if _[-3]==a2 and _[2]==N])
+indices=[_ for _ in range(len(params)) if params[_][-3]==a2 and params[_][2]==N]
+fig_dict=dict(zip(unique_params,axs))
+
+for i in indices:
+    L,sigma_e2,N,V_s,mu,a2,theta,rep=params[i]
+    a=np.sqrt(a2)
+
+    ax=fig_dict[(L,N,V_s,mu,a2)]
+    sim_excess=Vg_sims[i]-Vg_LB(mu,L,V_s) 
+    ax.violinplot(
+            sim_excess/(sim_excess+1),
+            positions=[np.log10(sigma_e2+offset)],
+            widths=0.25,showmeans=True)
+   
+    scaleVg=Vg_LB(mu,L,V_s)+np.sqrt(V_s*sigma_e2)
+    ax.plot(
+            np.log10(params[i][xvar]+offset),
+            scaleVg/(scaleVg+1),
+            'ko',markersize=5,
+            label=r'$4L\mu V_s+\sqrt{V_s\sigma^2}$',alpha=0.7)
+    
+    Vg_numerical=Vg_pred_consistent(5e-1,N,mu,a,L,sigma_e2,V_s)
+    
+    ax.plot(
+            np.log10(params[i][xvar]+offset),
+            Vg_numerical/(Vg_numerical+1),
+            'kx',markersize=10,
+            label=r'Diffusion approx. (numerical)',alpha=0.7)
+        
+    ax.set_ylim([0,1])
+    ax.set_title(r'$L=$'+str(L)+r'$,V_s=$'+str(V_s),y=.99,fontsize=11)
+                    
+    h2_LB=Vg_LB(mu,L,V_s)/(1+Vg_LB(mu,L,V_s))
+    ax.axhline(y=h2_LB,color='k',ls='--',label=r'Latter-Bulmer $(4L\mu V_s)$')
+    ax.axhspan(0.1,0.6,color='k',alpha=0.02)
+
+axs[2].set_ylabel(r'Heritability $h^2$',fontsize=14)
+axs[2].yaxis.set_label_coords(-0.2,1.1)
+
+tick_list=[r'$0.0$',' ',r'$0.2$',' ',r'$0.4$',' ',r'$0.6$',' ',r'$0.8$']
+#axs[0].set_yticklabels(tick_list,fontsize=12)
+#axs[2].set_yticklabels(tick_list,fontsize=12)
+axs[1].set_yticklabels([])
+axs[3].set_yticklabels([])
+
+tick_list=['',r'$0$', r'$10^{-4}$',  r'$10^{-3}$', r'$10^{-2}$']
+axs[2].set_xticklabels(tick_list,fontsize=12)
+axs[3].set_xticklabels(tick_list,fontsize=12)
+axs[0].set_xticklabels([])
+axs[1].set_xticklabels([])
+
+axs[2].set_xlabel(r'Fluctuation intensity $\sigma^2$',x=1.15,fontsize=14)
+
+#remove duplicate legend entries
+handles, labels = axs[0].get_legend_handles_labels()
+by_label = dict(zip(labels, handles))
+axs[0].legend(by_label.values(), by_label.keys(), loc=[0.01,.7],fontsize=9)
