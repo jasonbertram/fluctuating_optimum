@@ -180,7 +180,7 @@ for i in indices:
             np.log10(params[i][xvar]+offset),
             scaleVg/(scaleVg+1),
             'ko',markersize=5,
-            label=r'$4L\mu V_s+\sqrt{V_s\sigma^2}$',alpha=0.7)
+            label=r'$V_g=4L\mu V_s+\sqrt{V_s\sigma^2}$',alpha=0.7)
     
     Vg_numerical=Vg_pred_consistent(5e-1,N,mu,a,L,sigma_e2,V_s)
     
@@ -578,14 +578,14 @@ for i in indices:
             positions=[np.log10(sigma_e2+offset)],
             widths=0.25,showmeans=True)
    
-    scaleVg=Vg_LB(mu,L,V_s)+np.sqrt(V_s*sigma_e2)
+    scaleVg=np.sqrt(V_s*sigma_e2)
     ax.plot(
             np.log10(params[i][xvar]+offset),
             scaleVg/(scaleVg+1),
             'ko',markersize=5,
             label=r'$4L\mu V_s+\sqrt{V_s\sigma^2}$',alpha=0.7)
     
-    Vg_numerical=Vg_pred_consistent(5e-1,N,mu,a,L,sigma_e2,V_s)
+    Vg_numerical=Vg_pred_consistent(5e-1,N,mu,a,L,sigma_e2,V_s)-Vg_LB(mu,L,V_s) 
     
     ax.plot(
             np.log10(params[i][xvar]+offset),
@@ -596,9 +596,6 @@ for i in indices:
     ax.set_ylim([0,1])
     ax.set_title(r'$L=$'+str(L)+r'$,V_s=$'+str(V_s),y=.99,fontsize=11)
                     
-    h2_LB=Vg_LB(mu,L,V_s)/(1+Vg_LB(mu,L,V_s))
-    ax.axhline(y=h2_LB,color='k',ls='--',label=r'Latter-Bulmer $(4L\mu V_s)$')
-    ax.axhspan(0.1,0.6,color='k',alpha=0.02)
 
 axs[2].set_ylabel(r'Heritability $h^2$',fontsize=14)
 axs[2].yaxis.set_label_coords(-0.2,1.1)
