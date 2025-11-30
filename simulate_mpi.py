@@ -74,10 +74,10 @@ def simulate(param):
 ####################################
 #Parallel handling of replicates with MPI.
 
-#sigma_e2s=np.array([0,1e-4,5e-4,1e-3,5e-3,1e-2])
-sigma_e2s=np.array([1e-3])
-#Ls=np.array([100])
-Ls=np.array([10,20,50,100,200,500,1000])
+sigma_e2s=np.array([0,1e-4,5e-4,1e-3,5e-3,1e-2])
+#sigma_e2s=np.array([1e-3])
+Ls=np.array([100])
+#Ls=np.array([10,20,50,100,200,500,1000])
 Ns=np.array([10000])
 #Ns=np.array([100,200,500,1000,2000,5000,10000,50000,100000])
 Vs=np.array([5])
@@ -85,7 +85,7 @@ Vs=np.array([5])
 mus=np.array([6.6e-6])
 #mus=np.array([1e-7,2e-7,5e-7,1e-6,2e-6,5e-6,1e-5,2e-5,5e-5])
 thetas=np.array([0e-1])
-#a2s=np.array([0.01,0.02,0.04,0.06,0.08,0.1])
+#a2s=np.arange(0.01,0.11,0.01)
 a2s=np.array([0.1])
 all_reps=1000
 
