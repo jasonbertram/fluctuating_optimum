@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --ntasks=200               # number of MPI processes
 #SBATCH --mem-per-cpu=4G      # memory; default unit is megabytes
-#SBATCH --time=0-02:00           # time (DD-HH:MM)
+#SBATCH --time=0-01:00           # time (DD-HH:MM)
 
 module load scipy-stack mpi4py
 
