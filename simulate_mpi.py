@@ -79,7 +79,7 @@ sigma_e2s=np.array([1e-3])
 Ls=np.array([100])
 #Ls=np.array([10,20,50,100,200,500,1000])
 #Ns=np.array([10000])
-Ns=np.array([100,200,500,1000,2000,5000,10000,50000,100000])
+Ns=np.array([100,200,500,1000,2000,5000,10000])
 Vs=np.array([5])
 #Vs=np.linspace(1,20,9)
 mus=np.array([6.6e-6])
@@ -117,4 +117,5 @@ params=[_ for _ in
         itertools.product(Ls,sigma_e2s,Ns,Vs,mus,a2s,thetas,[all_reps])
         ]
 
+#np.savetxt("Vg_sims",output)
 np.savetxt("Vg_sims",output,header=str(params))
