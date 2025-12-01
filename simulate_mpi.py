@@ -114,8 +114,16 @@ for param in params:
         output.append(recvbuf.flatten())
 
 params=[_ for _ in
-        itertools.product(Ls,sigma_e2s,Ns,Vs,mus,a2s,thetas,[all_reps])
+        itertools.product(Ls,sigma_e2s,Ns,Vs,mus,a2s,thetas,np.array([all_reps]))
         ]
 
-#np.savetxt("Vg_sims",output)
-np.savetxt("Vg_sims",output,header=str(params))
+if rank==0: print(output)
+
+with open('Vg_sims_test1', 'a') as f: np.savetxt(f,output) 
+with open('Vg_sims_test2', 'a') as f: np.savetxt(f,np.array(output)) 
+
+with open('Vg_sims', 'w') as f: f.write('#'+str(params))
+with open('Vg_sims', 'a') as f: np.savetxt(f,output) 
+
+#Creates spurious null characters
+#np.savetxt("Vg_sims",np.array(output),header=str(params))
