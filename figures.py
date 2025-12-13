@@ -131,7 +131,9 @@ axs[2].set_xlabel(r'Generations')
 axs[2].annotate(r'$C$',[0.92,0.87],xycoords='axes fraction',fontsize=14)
 
 inset = axs[1].inset_axes([0.42,0.69,0.3,0.30])
+
 Vg=2*np.sum(0.1*hist1[:,:]*(1-hist1[:,:]),1)
+
 inset.hist(Vg/(1+Vg),bins=20,color='gray')
 Vg=2*np.sum(0.1*hist0[:,:]*(1-hist0[:,:]),1)
 inset.hist(Vg/(1+Vg),color='k')
@@ -145,7 +147,7 @@ inset.set_xlabel(r'$h^2$',labelpad=-10)
 axs[1].legend(loc='upper left',fontsize=5)
 #axs[1].legend(loc=[0.01,1.8])
 
-plt.savefig('timeseries.pdf',bbox_inches='tight')
+#plt.savefig('timeseries.pdf',bbox_inches='tight')
 
 #%%
 ########################################
@@ -170,32 +172,54 @@ for i in indices:
 
     ax=fig_dict[(L,N,V_s,mu,a2)]
     
-    ax.violinplot(
+    parts=ax.violinplot(
             Vg_sims[i]/(Vg_sims[i]+1),
             positions=[np.log10(sigma_e2+offset)],
             widths=0.25,showmeans=True)
+
+    for pc in parts['bodies']:
+        pc.set_color('C0')
+        pc.set_alpha(0.5)
    
-    scaleVg=Vg_LB(mu,L,V_s)+np.sqrt(V_s*sigma_e2)
-    ax.plot(
-            np.log10(params[i][xvar]+offset),
-            scaleVg/(scaleVg+1),
-            'ko',markersize=5,
-            label=r'$V_g=4L\mu V_s+\sqrt{V_s\sigma^2}$',alpha=0.7)
-    
-    Vg_numerical=Vg_pred_consistent(5e-1,N,mu,a,L,sigma_e2,V_s)
-    
-    ax.plot(
-            np.log10(params[i][xvar]+offset),
-            Vg_numerical/(Vg_numerical+1),
-            'kx',markersize=10,
-            label=r'Diffusion approx. (numerical)',alpha=0.7)
-        
+    parts['cbars'].set_color('C0')
+    parts['cmeans'].set_color('C0')
+    parts['cmins'].set_color('C0')
+    parts['cmaxes'].set_color('C0')
+
+    #variances for table 2
+    if sigma_e2==1e-3:
+        h2=Vg_sims[i]/(Vg_sims[i]+1)
+        print(L,V_s,sigma_e2,np.var(h2))
+        print('    ',np.std(h2)/np.mean(h2))
+        print('    ',np.mean(h2))
+
     ax.set_ylim([0,1])
     ax.set_title(r'$L=$'+str(L)+r'$,V_s=$'+str(V_s),y=.99,fontsize=11)
                     
     h2_LB=Vg_LB(mu,L,V_s)/(1+Vg_LB(mu,L,V_s))
     ax.axhline(y=h2_LB,color='k',ls='--',label=r'Latter-Bulmer $(4L\mu V_s)$')
     ax.axhspan(0.1,0.6,color='k',alpha=0.02)
+
+sig=np.unique(np.array(params)[:,1])
+
+for _ in fig_dict.keys():
+    ax=fig_dict[_]
+    L,N,V_s,mu,a2=_
+    Vg_numerical=np.array([
+        Vg_pred_consistent(1e-1,N,mu,a,L,sigma_e2,V_s)
+        for sigma_e2 in sig])
+
+    ax.plot(
+            np.log10(sig+offset),
+            Vg_numerical/(Vg_numerical+1),
+            'k:',label=r'Diff, approx.',alpha=0.7)
+
+    scaleVg=Vg_LB(mu,L,V_s)+np.array([np.sqrt(V_s*sigma_e2) for sigma_e2 in sig])
+    ax.plot(
+            np.log10(sig+offset),
+            scaleVg/(scaleVg+1),
+            'k', label=r'$V_g=4L\mu V_s+\sqrt{V_s\sigma^2}$',alpha=0.7)
+
 
 axs[2].set_ylabel(r'Heritability $h^2$',fontsize=14)
 axs[2].yaxis.set_label_coords(-0.2,1.1)
@@ -219,10 +243,8 @@ handles, labels = axs[0].get_legend_handles_labels()
 by_label = dict(zip(labels, handles))
 axs[0].legend(by_label.values(), by_label.keys(), loc=[0.01,.7],fontsize=9)
 
-plt.savefig('violinplot_N'+str(N)+'_a2'+str(a2)+'_th'+str(theta)+'_mu'+str(mu)+'.pdf',
-            bbox_inches='tight')
-
-
+#plt.savefig('violinplot_N'+str(N)+'_a2'+str(a2)+'_th'+str(theta)+'_mu'+str(mu)+'.pdf',
+#            bbox_inches='tight')
 
 ##################################
 #%%
@@ -254,7 +276,7 @@ for _ in Ls:
     h2_theory.append(temp/(1+temp))
 
 plt.plot(np.log10(Ls)+3,
-         h2_theory,'b-',label=r'$V_s=20, \sigma^2=10^{-2}$ (Diff.)')
+         h2_theory,'b:',label=r'$V_s=20, \sigma^2=10^{-2}$ (Diff.)')
 
 h2_theory=[]
 for _ in Ls:
@@ -262,7 +284,7 @@ for _ in Ls:
     h2_theory.append(temp/(1+temp))
 
 plt.plot(np.log10(Ls)+3,
-         h2_theory,'r-',label=r'$V_s=5,$  $\sigma^2=10^{-2}$ (Diff.)')
+         h2_theory,'r:',label=r'$V_s=5,$  $\sigma^2=10^{-2}$ (Diff.)')
 
 unique_params=set([_[:1]+_[2:6] for _ in params 
                    if _[-3]==0.1 and _[2]==N and _[1]==1e-2])
@@ -580,7 +602,7 @@ Vg_numerical=np.array([
 axs[0,0].plot(
         np.log10(sig+1e-5),
         Vg_numerical,
-        '--', label=r'Diff. approx.')
+        'k:', label=r'Diff. approx.')
     
 axs[0,0].plot(np.log10(sig+1e-5),np.sqrt(sig*V_s),'k',label=r'$\sqrt{V_s\sigma^2}$')
 
@@ -592,7 +614,7 @@ tick_list=[r'$0$', r'$10^{-4}$', r'$10^{-3}$', r'$10^{-2}$']
 axs[0,0].set_xticklabels(tick_list,fontsize=8)
 handles, labels = axs[0,0].get_legend_handles_labels()
 by_label = dict(zip(labels, handles))
-axs[0,0].legend(by_label.values(), by_label.keys(), loc=[0.01,.7],fontsize=6)
+axs[0,0].legend(by_label.values(), by_label.keys(), loc=[0.01,.65],fontsize=6)
 
 
 fname="Vg_sims_V"
@@ -612,7 +634,7 @@ axs[0,1].violinplot(np.transpose(Vg_sims),positions=V,showmeans=True, widths=2)
 Vg_numerical=np.array([
     Vg_pred_consistent(1e-1,N,mu,np.sqrt(a2),L,sigma_e2,V_s)-Vg_LB(mu,L,V_s)
     for V_s in V])
-axs[0,1].plot(V, Vg_numerical, '--')
+axs[0,1].plot(V, Vg_numerical, 'k:')
 
 axs[0,1].plot(V,np.sqrt(sigma_e2*V),'k')
 
@@ -635,21 +657,22 @@ for i,par in enumerate(params):
     
 a2s=np.array(params)[:,5]
 axs[1,0].violinplot(np.transpose(Vg_sims),
-                    positions=a2s,
-                    showmeans=True, widths=.01)
+                    positions=np.log10(a2s),
+                    showmeans=True, widths=.2)
 
 Vg_numerical=np.array([
     Vg_pred_consistent(1e-1,N,mu,np.sqrt(a2),L,sigma_e2,V_s)-Vg_LB(mu,L,V_s)
     for a2 in a2s])
-axs[1,0].plot(a2s, Vg_numerical, '--')
+axs[1,0].plot(np.log10(a2s), Vg_numerical, 'k:')
 
-axs[1,0].plot(a2s,len(a2s)*[np.sqrt(sigma_e2*V_s)],'k')
+axs[1,0].plot(np.log10(a2s),len(a2s)*[np.sqrt(sigma_e2*V_s)],'k')
 
 axs[1,0].set_ylim([-0.05,top])
 axs[1,0].set_ylabel(r'Extra $V_g$ due to fluctuations')
 axs[1,0].set_xlabel(r'$a^2$',labelpad=-1)
-axs[1,0].set_xticks([0.01,0.05,0.1])
-
+axs[1,0].set_xticks([-3,-2,-1])
+tick_list=[r'$10^{-3}$', r'$10^{-2}$', r'$10^{-1}$']
+axs[1,0].set_xticklabels(tick_list,fontsize=8)
 
 fname="Vg_sims_N"
 with open(fname,'r') as fin:
@@ -665,20 +688,21 @@ for i,par in enumerate(params):
 Ns=np.array(params)[:,2]
 axs[1,1].violinplot(np.transpose(Vg_sims),
                     positions=np.log10(Ns),
-                    showmeans=True, widths=.2)
+                    showmeans=True, widths=.3)
 
 Vg_numerical=np.array([
     Vg_pred_consistent(1e-1,N,mu,np.sqrt(a2),L,sigma_e2,V_s)-Vg_LB(mu,L,V_s)
     for N in Ns])
-axs[1,1].plot(np.log10(Ns), Vg_numerical, '--')
+axs[1,1].plot(np.log10(Ns), Vg_numerical, 'k:')
 
 axs[1,1].plot(np.log10(Ns),len(Ns)*[np.sqrt(sigma_e2*V_s)],'k')
 axs[1,1].set_ylim([-0.05,top])
-axs[1,1].set_xlabel(r'$N$',labelpad=-1)
+axs[1,1].set_xlabel(r'$2N$',labelpad=-1)
 axs[1,1].set_yticklabels([])
-axs[1,1].set_xticks([2,3,4])
-tick_list=[r'$10^2$', r'$10^{3}$', r'$10^{4}$']
+axs[1,1].set_xticks([2,3,4,5])
+tick_list=[r'$10^2$', r'$10^{3}$', r'$10^{4}$', r'$10^{5}$']
 axs[1,1].set_xticklabels(tick_list,fontsize=8)
+
 
 fname="Vg_sims_L"
 with open(fname,'r') as fin:
@@ -700,9 +724,10 @@ Vg_numerical=np.array([
     Vg_pred_consistent(1e-1,N,mu,np.sqrt(a2),L,sigma_e2,V_s)-Vg_LB(mu,L,V_s)
     for L in Ls])
 
-axs[2,0].plot(np.log10(Ls), Vg_numerical, '--')
+axs[2,0].plot(np.log10(Ls), Vg_numerical, 'k:')
 
-axs[2,0].plot(np.log10(Ls),len(Ls)*[np.sqrt(sigma_e2*V_s)],'k')
+#axs[2,0].plot(np.log10(Ls),len(Ls)*[np.sqrt(sigma_e2*V_s)],'k')
+axs[2,0].plot(np.log10(Ls),np.sqrt(Ls*sigma_e2*V_s),'k')
 
 axs[2,0].set_ylim([-0.05,top])
 axs[2,0].set_xlabel(r'$L$',labelpad=-1)
@@ -722,16 +747,16 @@ for i,par in enumerate(params):
 
     Vg_sims[i]=Vg_sims[i]-Vg_LB(mu,L,V_s)
 
-mus=np.array(params)[:,4]
-axs[2,1].violinplot(np.transpose(Vg_sims),
+mus=np.array(params)[:-2,4]
+axs[2,1].violinplot(np.transpose(Vg_sims[:-2]),
                     positions=np.log10(mus),
                     showmeans=True,
-                    widths=.4)
+                    widths=.3)
 
 Vg_numerical=np.array([
     Vg_pred_consistent(1e-1,N,mu,np.sqrt(a2),L,sigma_e2,V_s)-Vg_LB(mu,L,V_s)
     for mu in mus])
-axs[2,1].plot(np.log10(mus), Vg_numerical, '--')
+axs[2,1].plot(np.log10(mus), Vg_numerical, 'k:')
 
 axs[2,1].plot(np.log10(mus),len(mus)*[np.sqrt(sigma_e2*V_s)],'k')
 
@@ -741,6 +766,5 @@ axs[2,1].set_yticklabels([])
 axs[2,1].set_xticks([-7,-6,-5])
 tick_list=[r'$10^{-7}$', r'$10^{-6}$', r'$10^{-5}$']
 axs[2,1].set_xticklabels(tick_list,fontsize=8)
-
 
 plt.savefig('param_dep.pdf',bbox_inches='tight')
