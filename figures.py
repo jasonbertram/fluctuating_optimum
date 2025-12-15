@@ -727,7 +727,7 @@ Vg_numerical=np.array([
 axs[2,0].plot(np.log10(Ls), Vg_numerical, 'k:')
 
 #axs[2,0].plot(np.log10(Ls),len(Ls)*[np.sqrt(sigma_e2*V_s)],'k')
-axs[2,0].plot(np.log10(Ls),np.sqrt(Ls*sigma_e2*V_s),'k')
+axs[2,0].plot(np.log10(Ls),np.sqrt(Ls*sigma_e2*V_s)/np.sqrt(100),'k')
 
 axs[2,0].set_ylim([-0.05,top])
 axs[2,0].set_xlabel(r'$L$',labelpad=-1)
